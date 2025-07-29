@@ -1,4 +1,4 @@
-package com.codeit.hrbank.backup.entitiy;
+package com.codeit.hrbank.change_log.entity;
 
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -6,8 +6,8 @@ import org.springframework.data.annotation.CreatedDate;
 import java.time.Instant;
 
 @Entity
-@Table
-public class Backup {
+@Table(name = "employee_change_details")
+public class ChangeLogDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

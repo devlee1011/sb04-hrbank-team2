@@ -95,12 +95,13 @@ create table employee_change_details
 (
     id         bigserial
         primary key,
-    field_name varchar(100) not null,
+    field_name varchar(100)                                       not null,
     old_value  text,
     new_value  text,
     log_id     bigint
         references change_logs
-            on delete cascade
+            on delete cascade,
+    created_at timestamp with time zone default CURRENT_TIMESTAMP not null
 );
 
 alter table employee_change_details
