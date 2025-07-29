@@ -2,12 +2,14 @@ package com.codeit.hrbank;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
-public class HrbankApplication {
+@EnableJpaAuditing
+public class HrBankApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(HrbankApplication.class, args);
+        SpringApplication.run(HrBankApplication.class, args);
     }
 
 }

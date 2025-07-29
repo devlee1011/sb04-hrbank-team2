@@ -1,21 +1,15 @@
 package com.codeit.hrbank.stored_file.entity;
 
+import com.codeit.hrbank.base_entity.BaseEntity;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.Instant;
-
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "files")
-public class StoredFile {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @CreatedDate
-    @Column
-    private Instant createdAt;
-    @LastModifiedDate
-    @Column
-    private Instant updatedAt;
+public class StoredFile extends BaseEntity {
 }

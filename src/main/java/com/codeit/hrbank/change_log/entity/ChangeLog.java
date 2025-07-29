@@ -1,17 +1,16 @@
 package com.codeit.hrbank.change_log.entity;
 
-import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
+import com.codeit.hrbank.base_entity.BaseEntity;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.Instant;
-
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
-@Table
-public class ChangeLog {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @CreatedDate
-    @Column
-    private Instant createdAt;
+@Table(name = "change_logs")
+public class ChangeLog extends BaseEntity {
 }

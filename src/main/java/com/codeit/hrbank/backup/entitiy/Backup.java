@@ -1,17 +1,15 @@
 package com.codeit.hrbank.backup.entitiy;
 
+import com.codeit.hrbank.base_entity.BaseEntity;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.Instant;
-
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
-@Table
-public class Backup {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @CreatedDate
-    @Column
-    private Instant createdAt;
+@Table(name = "backups")
+public class Backup extends BaseEntity {
 }

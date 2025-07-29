@@ -1,43 +1,16 @@
 package com.codeit.hrbank.employee.entity;
 
-import com.codeit.hrbank.department.entity.Department;
-import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import com.codeit.hrbank.base_entity.BaseUpdatableEntity;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.Instant;
-import java.time.LocalDate;
-
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
-@Table
-public class Employee {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    @Column(nullable = false)
-    String name;
-    @Column(nullable = false, unique = true)
-    String email;
-    @Column(nullable = false)
-    String position;
-    @Column(nullable = false)
-    LocalDate hireDate;
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    EmployeeStatus status;
-    @Column(nullable = false)
-    String employee_number;
-    @Column(nullable = false)
-    @CreatedDate
-    Instant createdAt;
-    @Column
-    @LastModifiedDate
-    Instant updatedAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id")
-    Department department;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profile_id")
-    File profile
+@Table(name = "employees")
+public class Employee extends BaseUpdatableEntity {
 }
