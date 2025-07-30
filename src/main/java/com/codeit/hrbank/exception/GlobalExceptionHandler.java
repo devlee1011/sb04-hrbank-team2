@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity handleMethodArgumentNotValidException(
+    public ResponseEntity<?> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException e) {
         final ErrorResponse response = ErrorResponse.of(e.getBindingResult());
 
@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity handleConstraintViolationException(
+    public ResponseEntity<?> handleConstraintViolationException(
             ConstraintViolationException e) {
         final ErrorResponse response = ErrorResponse.of(e.getConstraintViolations());
 
@@ -29,9 +29,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessLogicException.class)
-    public ResponseEntity handleBusinessLogicException(BusinessLogicException businessLogicException) {
+    public ResponseEntity<?> handleBusinessLogicException(BusinessLogicException businessLogicException) {
         final ErrorResponse response = ErrorResponse.of(businessLogicException);
-
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

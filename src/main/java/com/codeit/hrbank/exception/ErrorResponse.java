@@ -20,17 +20,20 @@ public class ErrorResponse {
     @Schema(description = "발생 시각", format = "date-time")
     private Instant timestamp;
     @Schema(description = "에러 내용", example = "Bad Request!")
-    private String message;
+    private String messages;
+    @Schema(description = "설명", example = "부서 코드는 필수입니다.")
+    private String details;
 
     private ErrorResponse(List<FieldError> fieldErrors, List<ConstraintViolationError> violationErrors) {
         this.fieldErrors = fieldErrors;
         this.violationErrors = violationErrors;
     }
 
-    private ErrorResponse(ExceptionCode exceptionCode, Instant timestamp, String message) {
+    private ErrorResponse(ExceptionCode exceptionCode, Instant timestamp, String messages) {
         this.status = exceptionCode.getStatus();
         this.timestamp = timestamp;
-        this.message = message;
+        this.messages = messages;
+        this.details = exceptionCode.getDetails();
     }
 
     public static ErrorResponse of(BindingResult bindingResult) {
@@ -42,7 +45,11 @@ public class ErrorResponse {
     }
 
     public static ErrorResponse of(BusinessLogicException businessLogicException) {
-        return new ErrorResponse(businessLogicException.getExceptionCode(), Instant.now(), businessLogicException.getMessage());
+        return new ErrorResponse(
+                businessLogicException.getExceptionCode(),
+                Instant.now(),
+                businessLogicException.getMessage()
+        );
     }
 
     @Getter
