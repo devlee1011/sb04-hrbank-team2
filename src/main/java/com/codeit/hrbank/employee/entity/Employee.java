@@ -32,8 +32,8 @@ public class Employee extends BaseUpdatableEntity {
     @Enumerated(EnumType.STRING)
     EmployeeStatus status;
 
-    @Column(nullable = false)
-    String employee_number;
+    @Column
+    String employeeNumber;
 
     @ManyToOne
     @JoinColumn(name = "department_id")
@@ -42,4 +42,14 @@ public class Employee extends BaseUpdatableEntity {
     @OneToOne(cascade = {CascadeType.PERSIST,CascadeType.REMOVE}, orphanRemoval = true)
     @JoinColumn(name = "profile_id")
     StoredFile profile;
+
+    public Employee(String name, String email, Department department, String position, LocalDate hireDate, StoredFile profile) {
+        this.name = name;
+        this.email = email;
+        this.department = department;
+        this.position = position;
+        this.hireDate = hireDate;
+        this.profile = profile;
+        this.status = EmployeeStatus.ACTIVE;
+    }
 }

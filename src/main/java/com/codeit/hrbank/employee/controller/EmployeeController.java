@@ -49,39 +49,27 @@ public class EmployeeController {
                     return StoredFile.getId();
                 })
                 .orElse(null);
-        Employee employee = employeeService.create(employeeCreateRequest,storedFileId);
+        Employee employee = employeeService.create(employeeCreateRequest,1L);
         EmployeeDto response = employeeMapper.toDto(employee);
-
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity getById(@PathVariable("id") Long id) {
-        Employee employee = employeeService.getById(id);
-        EmployeeDto response = employeeMapper.toDto(employee);
 
-        return ResponseEntity.ok(response);
+        return null;
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity delete(@PathVariable("id") Long id) {
-        employeeService.delete(id);
-        return ResponseEntity.noContent().build();
+        return null;
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity update(@PathVariable("id") Long id,
                                  @RequestPart("employeeUpdateRequest") EmployeeUpdateRequest employeeUpdateRequest,
                                  @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        Long storedFileId = Optional.ofNullable(profile)
-                .map(file -> {
-                    StoredFile StoredFile = StoredFileService.create(profile);
-                    return StoredFile.getId();
-                })
-                .orElse(null);
-        Employee employee = employeeService.update(id,storedFileId);
-        EmployeeDto response = employeeMapper.toDto(employee);
-        return ResponseEntity.ok(response);
+        return null;
     }
 
     @GetMapping("/stats/trend")
