@@ -43,24 +43,12 @@ public class EmployeeController {
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity create(@RequestPart("employeeCreateRequest") EmployeeCreateRequest employeeCreateRequest,
                                  @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        Long storedFileId = Optional.ofNullable(profile)
-                .map(file -> {
-                    StoredFile StoredFile = StoredFileService.create(profile);
-                    return StoredFile.getId();
-                })
-                .orElse(null);
-        Employee employee = employeeService.create(employeeCreateRequest,storedFileId);
-        EmployeeDto response = employeeMapper.toDto(employee);
-
-        return ResponseEntity.ok(response);
+        return null;
     }
 
     @GetMapping("/{id}")
     public ResponseEntity getById(@PathVariable("id") Long id) {
-        Employee employee = employeeService.getById(id);
-        EmployeeDto response = employeeMapper.toDto(employee);
-
-        return ResponseEntity.ok(response);
+        return null;
     }
 
     @DeleteMapping("/{id}")
@@ -73,15 +61,7 @@ public class EmployeeController {
     public ResponseEntity update(@PathVariable("id") Long id,
                                  @RequestPart("employeeUpdateRequest") EmployeeUpdateRequest employeeUpdateRequest,
                                  @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        Long storedFileId = Optional.ofNullable(profile)
-                .map(file -> {
-                    StoredFile StoredFile = StoredFileService.create(profile);
-                    return StoredFile.getId();
-                })
-                .orElse(null);
-        Employee employee = employeeService.update(id,storedFileId);
-        EmployeeDto response = employeeMapper.toDto(employee);
-        return ResponseEntity.ok(response);
+        return null;
     }
 
     @GetMapping("/stats/trend")
