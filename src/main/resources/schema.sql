@@ -107,4 +107,7 @@ create table employee_change_details
 alter table employee_change_details
     owner to hrbank_user;
 
+alter table employees
+drop constraint employees_department_id_fkey;
+
 
