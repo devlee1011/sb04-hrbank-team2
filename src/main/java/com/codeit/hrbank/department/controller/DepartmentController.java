@@ -26,7 +26,7 @@ public class DepartmentController {
         List<DepartmentDto> departmentDtos = departmentProjections.stream()
                 .map(departmentProjection -> departmentMapper.toDto(
                         departmentProjection.getDepartment(),
-                        departmentProjection.getEmployeeAccount()
+                        departmentProjection.getEmployeeCount()
                 ))
                 .toList();
 

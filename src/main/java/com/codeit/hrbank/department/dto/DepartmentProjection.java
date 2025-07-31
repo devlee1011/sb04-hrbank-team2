@@ -4,5 +4,5 @@ import com.codeit.hrbank.department.entity.Department;
 
 public interface DepartmentProjection {
     Department getDepartment();
-    Long getEmployeeAccount();
+    Long getEmployeeCount();
 }
