@@ -15,9 +15,20 @@ public class BasicDepartmentService implements DepartmentService {
 
     @Override
     public Department create(Department department) {
-        // 이름 중복 불가
-        String name = department.getName();
 
+        String name = department.getName();
+        String description = department.getDescription();
+
+        // 이름, 설명 null 불가
+        if (name == null || name.trim().isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.NAME_CANNOT_BE_NULL);
+        }
+
+        if (description == null || description.trim().isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.DESCRIPTION_CANNOT_BE_NULL);
+        }
+
+        // 이름 중복 불가
         if (departmentRepository.existsByName(name)) {
             throw new BusinessLogicException(ExceptionCode.NAME_ALREADY_EXISTS);
         }
