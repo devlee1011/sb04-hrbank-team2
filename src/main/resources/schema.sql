@@ -2,12 +2,12 @@ create table departments
 (
     id               bigserial
         primary key,
+    created_at       timestamp with time zone default CURRENT_TIMESTAMP not null,
+    updated_at       timestamp with time zone default CURRENT_TIMESTAMP,
     name             varchar(100)                                       not null
         unique,
-    description      text,
-    established_date date                                               not null,
-    created_at       timestamp with time zone default CURRENT_TIMESTAMP not null,
-    updated_at       timestamp with time zone
+    description      text                                               not null,
+    established_date date                                               not null
 );
 
 alter table departments
@@ -39,10 +39,10 @@ create table employees
         constraint employees_status_check
             check ((status)::text = ANY
                    ((ARRAY ['ACTIVE'::character varying, 'ON_LEAVE'::character varying, 'RESIGNED'::character varying])::text[])),
-    employee_number varchar(50)                                        not null
+    employee_number varchar(50)
         unique,
     created_at      timestamp with time zone default CURRENT_TIMESTAMP not null,
-    updated_at      timestamp with time zone,
+    updated_at      timestamp with time zone default CURRENT_TIMESTAMP,
     department_id   bigint
                                                                        references departments
                                                                            on delete set null,
@@ -106,5 +106,8 @@ create table employee_change_details
 
 alter table employee_change_details
     owner to hrbank_user;
+
+alter table employees
+drop constraint employees_department_id_fkey;
 
 
