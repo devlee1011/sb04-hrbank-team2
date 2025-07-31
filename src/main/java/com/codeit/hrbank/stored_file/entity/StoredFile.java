@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -22,4 +23,10 @@ public class StoredFile extends BaseEntity {
 
   @Column(nullable = false)
   private Long size;
+
+  public StoredFile(MultipartFile file) {
+    this.fileName = file.getOriginalFilename();
+    this.type = file.getContentType();
+    this.size = file.getSize();
+  }
 }
