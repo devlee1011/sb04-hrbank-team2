@@ -33,7 +33,7 @@ public class Employee extends BaseUpdatableEntity {
     EmployeeStatus status;
 
     @Column(nullable = false)
-    String employee_number;
+    String employeeNumber;
 
     @ManyToOne
     @JoinColumn(name = "department_id")

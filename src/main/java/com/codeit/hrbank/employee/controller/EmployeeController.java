@@ -30,45 +30,6 @@ public class EmployeeController {
     private final EmployeeMapper employeeMapper;
     private final StoredFileService storedFileService;
 
-    @GetMapping
-    public ResponseEntity getAll(@RequestParam String nameOrEmail, @RequestParam String employeeNumber,
-                                 @RequestParam String departmentName, @RequestParam String position,
-                                 @RequestParam LocalDate hireDateFrom, @RequestParam LocalDate hireDateTo,
-                                 @RequestParam EmployeeStatus status, @RequestParam Long idAfter,
-                                 @RequestParam String cursor, Pageable pageable) {
-        return null;
-    }
-
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "userCreateRequest", contentType = MediaType.APPLICATION_JSON_VALUE)))
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity create(@RequestPart("employeeCreateRequest") EmployeeCreateRequest employeeCreateRequest,
-                                 @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        Long storedFileId = Optional.ofNullable(profile)
-                .map(file -> {
-                    StoredFile StoredFile = StoredFileService.create(profile);
-                    return StoredFile.getId();
-                })
-                .orElse(null);
-        Employee employee = employeeService.create(employeeCreateRequest,storedFileId);
-        EmployeeDto response = employeeMapper.toDto(employee);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity getById(@PathVariable("id") Long id) {
-        Employee employee = employeeService.getById(id);
-        EmployeeDto response = employeeMapper.toDto(employee);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity delete(@PathVariable("id") Long id) {
-        employeeService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @PatchMapping("/{id}")
     public ResponseEntity update(@PathVariable("id") Long id,
                                  @RequestPart("employeeUpdateRequest") EmployeeUpdateRequest employeeUpdateRequest,
@@ -79,25 +40,8 @@ public class EmployeeController {
                     return StoredFile.getId();
                 })
                 .orElse(null);
-        Employee employee = employeeService.update(id,storedFileId);
+        Employee employee = employeeService.update(id,employeeUpdateRequest, storedFileId);
         EmployeeDto response = employeeMapper.toDto(employee);
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/stats/trend")
-    public ResponseEntity getTrend(@RequestParam LocalDate from, @RequestParam LocalDate to,
-                                   @RequestParam String unit) {
-        return null;
-    }
-
-    @GetMapping("/stats/distribution")
-    public  ResponseEntity getDistribution(@RequestParam String groupBy, @RequestParam EmployeeStatus status) {
-        return null;
-    }
-
-    @GetMapping("/count")
-    public ResponseEntity getCount(@RequestParam EmployeeStatus status, @RequestParam LocalDate fromDate,
-                                   @RequestParam LocalDate toDate) {
-        return null;
     }
 }
