@@ -1,7 +1,13 @@
 package com.codeit.hrbank.department.controller;
 
+import com.codeit.hrbank.department.dto.request.DepartmentCreateRequest;
+import com.codeit.hrbank.department.dto.response.DepartmentDto;
+import com.codeit.hrbank.department.entity.Department;
+import com.codeit.hrbank.department.mapper.DepartmentMapper;
 import com.codeit.hrbank.department.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +22,13 @@ public class DepartmentController {
     private final DepartmentMapper departmentMapper;
 
     @PostMapping
-    public Responseentity<DepartmentDto> create(@RequestBody DepartmentCreateRequest departmentCreateRequest) {
+    public ResponseEntity<DepartmentDto> create(@RequestBody DepartmentCreateRequest departmentCreateRequest) {
+        Department department = departmentService.create(departmentMapper.toEntity(departmentCreateRequest));
+        Long employeeCount = department.getEmployees() != null ? department.getEmployees().size() : 0L;
+        DepartmentDto departmentDto = departmentMapper.toDto(department, employeeCount);
 
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(departmentDto);
     }
 }
