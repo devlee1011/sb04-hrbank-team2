@@ -19,7 +19,7 @@ public class Department extends BaseUpdatableEntity {
     @Column(unique = true, nullable = false, length = 100)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Column(nullable = false)
