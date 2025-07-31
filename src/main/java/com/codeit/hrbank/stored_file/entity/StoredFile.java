@@ -15,10 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 @Entity
 @Table(name = "files")
 public class StoredFile extends BaseEntity {
-  @Column(nullable = false)
+  @Column(nullable = false, length = 50)
   private String fileName;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 50)
   private String type;
 
   @Column(nullable = false)
