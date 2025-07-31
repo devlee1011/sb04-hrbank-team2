@@ -1,9 +1,9 @@
 package com.codeit.hrbank.department.service;
 
-import com.codeit.hrbank.department.entity.Department;
+import com.codeit.hrbank.department.dto.DepartmentProjection;
 
 import java.util.List;
 
 public interface DepartmentService {
-    List<Department> getAllDepartments();
+    List<DepartmentProjection> getAllDepartments();
 }
