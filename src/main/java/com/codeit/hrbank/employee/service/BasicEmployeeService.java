@@ -1,5 +1,6 @@
 package com.codeit.hrbank.employee.service;
 
+import com.codeit.hrbank.change_log.entity.ChangeLogType;
 import com.codeit.hrbank.department.repository.DepartmentRepository;
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.repository.EmployeeRepository;
@@ -31,7 +32,7 @@ public class BasicEmployeeService implements EmployeeService {
         Employee employee = employeeRepository.findById(id).orElse(null);
         employeeRepository.deleteById(id);
 
-        eventPublisher.publishEvent(new EmployeeLogEvent(employee,ChangeLogStatus.DELETE));
+        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.DELETE,"직원삭제"));
     }
 
     private void validateEmployee(Long id) {

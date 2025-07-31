@@ -1,5 +1,6 @@
 package com.codeit.hrbank.event;
 
+import com.codeit.hrbank.change_log.entity.ChangeLogType;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
 import com.codeit.hrbank.employee.entity.Employee;
 import lombok.Getter;
@@ -17,9 +18,10 @@ public class EmployeeLogEvent {
     String email;
     String status;
     String employeeNumber;
-    ChangeLogStatus logStatus;
+    ChangeLogType logStatus;
+    String memo;
 
-    public EmployeeLogEvent(Employee employee, ChangeLogStatus logStatus){
+    public EmployeeLogEvent(Employee employee, ChangeLogType logStatus, String memo){
         this.hireDate = employee.getHireDate();
         this.name = employee.getName();
         this.position = employee.getPosition();
@@ -28,5 +30,6 @@ public class EmployeeLogEvent {
         this.status = employee.getStatus().toString();
         this.employeeNumber = employee.getEmployeeNumber();
         this.logStatus = logStatus;
+        this.memo = memo;
     }
 }
