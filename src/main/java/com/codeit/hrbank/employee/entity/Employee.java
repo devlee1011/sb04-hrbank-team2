@@ -16,24 +16,24 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "employees")
 public class Employee extends BaseUpdatableEntity {
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     String email;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     String position;
 
     @Column(nullable = false)
     LocalDate hireDate;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     EmployeeStatus status;
 
-    @Column(nullable = false)
-    String employee_number;
+    @Column(length = 50)
+    String employeeNumber;
 
     @ManyToOne
     @JoinColumn(name = "department_id")
