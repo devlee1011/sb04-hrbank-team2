@@ -40,7 +40,7 @@ public class EmployeeController {
     public ResponseEntity getAll(@ModelAttribute("employeeGetAllRequest") EmployeeGetAllRequest employeeGetAllRequest) {
         Page<Employee> employees = employeeService.getAll(employeeGetAllRequest);
         if(!employees.hasContent()) {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok(PageResponse.from(Page.empty(),null,null));
         }
         Long idAfter = employees.getContent().get(employees.getContent().size() - 1).getId();
         String cursor = null;

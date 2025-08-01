@@ -35,13 +35,24 @@ public class BasicEmployeeService implements EmployeeService {
     @Override
     public Page<Employee> getAll(EmployeeGetAllRequest employeeGetAllRequest) {
         String sortField = employeeGetAllRequest.sortField() == null ? "name" : employeeGetAllRequest.sortField();
+        String sortDirection = employeeGetAllRequest.sortDirection() == null ? "asc" : employeeGetAllRequest.sortDirection();
         Specification<Employee> spec = Specification.unrestricted();
-        if ("name".equals(sortField)) {
-            spec = spec.and(EmployeeSpecification.greaterThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
-        } else if ("hireDate".equals(sortField)) {
-            spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
-        } else if ("employeeNumber".equals(sortField)) {
-            spec = spec.and(EmployeeSpecification.greaterThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
+        if ("asc".equalsIgnoreCase(sortDirection)) {
+            if ("name".equals(sortField)) {
+                spec = spec.and(EmployeeSpecification.greaterThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
+            } else if ("hireDate".equals(sortField)) {
+                spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
+            } else if ("employeeNumber".equals(sortField)) {
+                spec = spec.and(EmployeeSpecification.greaterThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
+            }
+        } else {
+            if ("name".equals(sortField)) {
+                spec = spec.and(EmployeeSpecification.lessThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
+            } else if ("hireDate".equals(sortField)) {
+                spec = spec.and(EmployeeSpecification.lessThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
+            } else if ("employeeNumber".equals(sortField)) {
+                spec = spec.and(EmployeeSpecification.lessThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
+            }
         }
         if (employeeGetAllRequest.nameOrEmail() != null && employeeGetAllRequest.nameOrEmail().contains("@")){
             spec = spec.and(EmployeeSpecification.likeEmail(employeeGetAllRequest.nameOrEmail()));
