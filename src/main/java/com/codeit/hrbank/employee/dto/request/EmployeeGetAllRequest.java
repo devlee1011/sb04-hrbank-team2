@@ -1,8 +1,6 @@
 package com.codeit.hrbank.employee.dto.request;
 
 import com.codeit.hrbank.employee.entity.EmployeeStatus;
-import lombok.Builder;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 

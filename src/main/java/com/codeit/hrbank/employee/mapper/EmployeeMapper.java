@@ -1,7 +1,6 @@
 package com.codeit.hrbank.employee.mapper;
 
 import com.codeit.hrbank.employee.dto.EmployeeDto;
-import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.entity.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
