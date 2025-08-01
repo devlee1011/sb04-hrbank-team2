@@ -1,9 +1,11 @@
 package com.codeit.hrbank.employee.entity;
 
-import com.codeit.hrbank.base_entity.BaseUpdatableEntity;
+import com.codeit.hrbank.base.entity.BaseUpdatableEntity;
 import com.codeit.hrbank.department.entity.Department;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
