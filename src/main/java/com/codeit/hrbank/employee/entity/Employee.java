@@ -1,6 +1,6 @@
 package com.codeit.hrbank.employee.entity;
 
-import com.codeit.hrbank.base.entity.BaseUpdatableEntity;
+import com.codeit.hrbank.base_entity.BaseUpdatableEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
