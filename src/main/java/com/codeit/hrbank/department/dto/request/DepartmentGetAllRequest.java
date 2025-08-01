@@ -1,6 +1,6 @@
 package com.codeit.hrbank.department.dto.request;
 
-public record DepartmentPageRequest(
+public record DepartmentGetAllRequest(
         String nameOrDescription,
         Long idAfter,
         String cursor,

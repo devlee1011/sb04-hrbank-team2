@@ -15,5 +15,5 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
             LEFT JOIN d.employees e
             GROUP BY d
             """)
-    List<DepartmentProjection> findAllWithEmployeeAccount();
+    List<DepartmentProjection> findAllWithEmployeeCount();
 }
