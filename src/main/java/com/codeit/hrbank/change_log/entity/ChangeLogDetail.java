@@ -12,4 +12,16 @@ import lombok.Setter;
 @Entity
 @Table(name = "employee_change_details")
 public class ChangeLogDetail extends BaseEntity {
+    @ManyToOne
+    @JoinColumn(name = "log_id")
+    ChangeLog changeLog;
+
+    @Column(nullable = false, length = 100)
+    String fieldName;
+
+    @Column
+    String oldValue;
+
+    @Column
+    String newValue;
 }
