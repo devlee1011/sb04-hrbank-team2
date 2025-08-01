@@ -1,56 +1,80 @@
 package com.codeit.hrbank.department.specification;
 
 import com.codeit.hrbank.department.entity.Department;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
+
+import java.time.LocalDate;
 
 public class DepartmentSpecification {
 
-    // 부분 조건: 부서명
+    // 부분 일치 조건: 이름
     public static Specification<Department> likeName(String name) {
-        return new Specification<Department>() {
-            @Override
-            public Predicate toPredicate(Root<Department> root,
-                                         CriteriaQuery<?> query,
-                                         CriteriaBuilder criteriaBuilder) {
-                if (name == null) return null;
-                return criteriaBuilder.like(root.get("name"), "%" + name + "%");
-            }
+        return (root, query, criteriaBuilder) -> {
+            if (name == null) return null;
+            return criteriaBuilder.like(root.get("name"), "%" + name + "%");
         };
     }
 
-    // 부분 조건: 부서 설명
+    // 부분 일치 조건: 설명
     public static Specification<Department> likeDescription(String description) {
-        return new Specification<Department>() {
-            @Override
-            public Predicate toPredicate(Root<Department> root,
-                                         CriteriaQuery<?> query,
-                                         CriteriaBuilder criteriaBuilder) {
-                if (description == null) return null;
-                return criteriaBuilder.like(root.get("description"), "%" + description + "%");
-            }
+        return (root, query, criteriaBuilder) -> {
+            if (description == null) return null;
+            return criteriaBuilder.like(root.get("description"), "%" + description + "%");
         };
     }
 
-    // ASC 정렬 조건: 부서명
+    // ASC 정렬 조건: 이름
     public static Specification<Department> greaterThanName(Long idAfter, String cursor) {
-        return new Specification<Department>() {
-            @Override
-            public Predicate toPredicate(Root<Department> root,
-                                        CriteriaQuery<?> query,
-                                        CriteriaBuilder criteriaBuilder) {
-                if (idAfter == null || cursor == null) return null;
+        return (root, query, criteriaBuilder) -> {
+            if (idAfter == null || cursor == null) return null;
 
-                Predicate greaterThanName = criteriaBuilder.greaterThan(root.get("name"), cursor);
-                Predicate sort = criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("name"), cursor),
-                        criteriaBuilder.greaterThan(root.get("id"), idAfter)
-                );
-                return criteriaBuilder.or(greaterThanName, sort);
-            }
+            Predicate greaterThanName = criteriaBuilder.greaterThan(root.get("name"), cursor);
+            Predicate sort = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("name"), cursor),
+                    criteriaBuilder.greaterThan(root.get("id"), idAfter)
+            );
+            return criteriaBuilder.or(greaterThanName, sort);
         };
     }
+    
+    // ASC 정렬 조건: 설립일
+    public static Specification<Department> greaterThanEstablishedDate(Long idAfter, LocalDate cursor) {
+        return (root, query, criteriaBuilder) -> {
+            if (idAfter == null || cursor == null) return null;
+            Predicate greaterThanEstablishedDate = criteriaBuilder.greaterThan(root.get("name"), cursor);
+            Predicate sort = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("establishedDate"), cursor),
+                    criteriaBuilder.greaterThan(root.get("id"), idAfter)
+            );
+            return criteriaBuilder.or(greaterThanEstablishedDate, sort);
+        };
+    }
+
+    // DESC 정렬 조건: 이름
+    public static Specification<Department> lessThanName(Long idAfter, String cursor) {
+        return (root, query, criteriaBuilder) -> {
+            if (idAfter == null || cursor == null) return null;
+            Predicate lessThanName = criteriaBuilder.lessThan(root.get("name"), cursor);
+            Predicate sort = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("name"), cursor),
+                    criteriaBuilder.greaterThan(root.get("id"), idAfter)
+            );
+            return criteriaBuilder.or(lessThanName, sort);
+        };
+    }
+
+    // DESC 정렬 조건: 설립일
+    public static Specification<Department> lessThanEstablishedDate(Long idAfter, LocalDate cursor) {
+        return (root, query, criteriaBuilder) -> {
+            if (idAfter == null || cursor == null) return null;
+            Predicate lessThanEstablishedDate = criteriaBuilder.lessThan(root.get("name"), cursor);
+            Predicate sort = criteriaBuilder.and(
+                    criteriaBuilder.equal(root.get("establishedDate"), cursor),
+                    criteriaBuilder.lessThan(root.get("id"), idAfter)
+            );
+            return criteriaBuilder.or(lessThanEstablishedDate, sort);
+        };
+    }
+
 }
