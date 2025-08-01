@@ -1,4 +1,4 @@
-package com.codeit.hrbank.base.entity;
+package com.codeit.hrbank.base_entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
