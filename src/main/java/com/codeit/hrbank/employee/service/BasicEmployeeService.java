@@ -24,13 +24,13 @@ public class BasicEmployeeService implements EmployeeService {
     @Transactional
     @Override
     public void delete(Long id) {
-        Employee employee = validateEmployee(id);
+        Employee employee = getValidatedEmployee(id);
         employeeRepository.deleteById(id);
 
         eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.DELETE,"직원삭제"));
     }
 
-    private Employee validateEmployee(Long id) {
+    private Employee getValidatedEmployee(Long id) {
         return employRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
     }
 }
