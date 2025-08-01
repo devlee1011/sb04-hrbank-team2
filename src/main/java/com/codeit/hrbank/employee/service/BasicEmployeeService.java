@@ -13,9 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Service
 @RequiredArgsConstructor
 public class BasicEmployeeService implements EmployeeService {
@@ -27,15 +24,13 @@ public class BasicEmployeeService implements EmployeeService {
     @Transactional
     @Override
     public void delete(Long id) {
-        Map<String,String> changes = new HashMap<>();
-        validateEmployee(id);
-        Employee employee = employeeRepository.findById(id).orElse(null);
+        Employee employee = validateEmployee(id);
         employeeRepository.deleteById(id);
 
         eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.DELETE,"직원삭제"));
     }
 
-    private void validateEmployee(Long id) {
-        if(!employeeRepository.existsById(id)) throw new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND);
+    private Employee validateEmployee(Long id) {
+        return employRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
     }
 }
