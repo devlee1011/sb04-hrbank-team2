@@ -1,4 +1,4 @@
-package com.codeit.hrbank.base_entity;
+package com.codeit.hrbank.base.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
