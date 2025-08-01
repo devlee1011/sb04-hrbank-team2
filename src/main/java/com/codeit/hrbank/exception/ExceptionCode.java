@@ -5,7 +5,8 @@ import lombok.Getter;
 public enum ExceptionCode {
     DEPARTMENT_HAS_EMPLOYEE_CANNOT_DELETE(400, "소속 직원이 있는 부서는 삭제할 수 없습니다.", "details"),
     DEPARTMENT_ID_IS_NOT_FOUND(400, "잘못된 요청입니다.", "details"),
-    EMAIL_ALREADY_EXISTS(400,"잘못된 요청입니다.","해당 이메일은 이미 존재합니다.");
+    EMAIL_ALREADY_EXISTS(400,"잘못된 요청입니다.","해당 이메일은 이미 존재합니다."),
+    STOREDFILE_NOT_FOUND(404,"잘못된 요청입니다.","해당 파일을 찾을 수 없습니다.");
 //    USER_NOT_FOUND(404, "User Not Found"),
 //    EMAIL_OR_USERNAME_ALREADY_EXISTS(400, "User With Email Already Exists"),
 //    CHANNEL_OR_USER_NOT_FOUND(404, "Channel | User With ID Not Found"),

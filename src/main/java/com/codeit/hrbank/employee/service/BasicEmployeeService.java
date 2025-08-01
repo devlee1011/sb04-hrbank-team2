@@ -49,7 +49,7 @@ public class BasicEmployeeService implements EmployeeService {
                                 savedEmployee.getId())
         );
         employeeRepository.save(savedEmployee);
-        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.CREATE);
+        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.CREATE,employeeCreateRequest.memo()));
         return savedEmployee;
     }
 
