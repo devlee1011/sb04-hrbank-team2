@@ -1,4 +1,4 @@
-package com.codeit.hrbank.employee.dto.response;
+package com.codeit.hrbank.base.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.domain.Page;
@@ -18,8 +18,8 @@ public record PageResponse<T>(
         @Schema(type = "boolean")
         boolean hasNext
 ) {
-    public static <T> PageResponse from(Page<T> page, Long idAfter, String cursor){
-        return new PageResponse<> (
+    public static <T> PageResponse from(Page<T> page, Long idAfter, String cursor) {
+        return new PageResponse<>(
                 page.getContent(),
                 cursor,
                 idAfter,

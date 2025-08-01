@@ -1,12 +1,11 @@
 package com.codeit.hrbank.employee.controller;
 
+import com.codeit.hrbank.base.dto.PageResponse;
 import com.codeit.hrbank.employee.dto.EmployeeDto;
 import com.codeit.hrbank.employee.dto.request.EmployeeCreateRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
-import com.codeit.hrbank.employee.dto.response.PageResponse;
 import com.codeit.hrbank.employee.entity.Employee;
-import com.codeit.hrbank.employee.entity.EmployeeStatus;
 import com.codeit.hrbank.employee.mapper.EmployeeMapper;
 import com.codeit.hrbank.employee.service.EmployeeService;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
@@ -16,13 +15,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 @RestController
@@ -61,8 +58,8 @@ public class EmployeeController {
                                  @RequestPart(value = "profile", required = false) MultipartFile profile) {
         Long profileId = Optional.ofNullable(profile)
                 .map(file -> {
-                    StoredFile StoredFile = storedFileService.createStoredFile(profile);
-                    return StoredFile.getId();
+                    StoredFile storedFile = storedFileService.createStoredFile(profile);
+                    return storedFile.getId();
                 })
                 .orElse(null);
         Employee employee = employeeService.create(employeeCreateRequest,profileId);
