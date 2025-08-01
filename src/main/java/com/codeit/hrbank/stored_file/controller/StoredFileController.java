@@ -30,4 +30,4 @@ public class StoredFileController implements StoredFileApi {
   public ResponseEntity downloadSoredFile(@PathVariable("id") Long storedFileId) {
     return storedFileService.downloadSoredFile(storedFileId);
   }
-}
+

@@ -26,6 +26,7 @@ public class Backup extends BaseEntity {
   private String worker;
 
   @Column(nullable = false, length = 20)
+  
   @Enumerated(EnumType.STRING)
   private BackupStatus status;
 

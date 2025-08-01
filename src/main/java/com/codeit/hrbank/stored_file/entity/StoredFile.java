@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Entity
 @Table(name = "files")
 public class StoredFile extends BaseEntity {
+  
   @Column(nullable = false, length = 50)
   private String fileName;
 
@@ -23,7 +24,7 @@ public class StoredFile extends BaseEntity {
 
   @Column(nullable = false)
   private Long size;
-
+  
   public StoredFile(MultipartFile file) {
     this.fileName = file.getOriginalFilename();
     this.type = file.getContentType();
