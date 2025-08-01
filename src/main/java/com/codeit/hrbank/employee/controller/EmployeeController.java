@@ -29,4 +29,11 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final EmployeeMapper employeeMapper;
     private final StoredFileService storedFileService;
+
+    @GetMapping("/{id}")
+    public ResponseEntity get(@PathVariable long id) {
+        Employee employee = employeeService.getEmployee(id);
+        EmployeeDto employeeDto = employeeMapper.toDto(employee);
+        return ResponseEntity.ok(employeeDto);
+    }
 }
