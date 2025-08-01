@@ -1,9 +1,7 @@
 package com.codeit.hrbank.stored_file.entity;
 
-import com.codeit.hrbank.base_entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.codeit.hrbank.base.entity.BaseEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Entity
 @Table(name = "files")
 public class StoredFile extends BaseEntity {
-  
+
   @Column(nullable = false, length = 50)
   private String fileName;
 
@@ -24,7 +22,7 @@ public class StoredFile extends BaseEntity {
 
   @Column(nullable = false)
   private Long size;
-  
+
   public StoredFile(MultipartFile file) {
     this.fileName = file.getOriginalFilename();
     this.type = file.getContentType();
