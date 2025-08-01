@@ -30,11 +30,14 @@ public class BasicEmployeeService implements EmployeeService {
     @Transactional
     @Override
     public Employee update(Long id, EmployeeUpdateRequest employeeUpdateRequest, Long newProfileId) {
-        isDuplicateEmail(employeeUpdateRequest.email());
-        isDuplicateDepartment(employeeUpdateRequest.departmentId());
+        if (employeeUpdateRequest.email() != null){
+            isDuplicateEmail(employeeUpdateRequest.email());
+        }
+        if (employeeUpdateRequest.departmentId() != null){
+            isDuplicateDepartment(employeeUpdateRequest.departmentId());
+        }
 
         Employee findEmployee = employeeRepository.findById(id).orElse(null);
-        Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId()).orElse(null);
 
         Optional.ofNullable(employeeUpdateRequest.name())
                 .ifPresent(findEmployee::setName);
@@ -43,6 +46,7 @@ public class BasicEmployeeService implements EmployeeService {
 
         Optional.ofNullable(employeeUpdateRequest.departmentId())
                 .ifPresent(departmentId -> {
+                    Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId()).orElse(null);
                     findEmployee.setDepartment(findDepartment);
                 });
 
@@ -61,7 +65,13 @@ public class BasicEmployeeService implements EmployeeService {
         });
 
         Employee employee = employeeRepository.save(findEmployee);
-        eventPublisher.publishEvent(new EmployeeLogEvent(employeeUpdateRequest,findDepartment.getName()));
+        String department = Optional.ofNullable(employeeUpdateRequest.departmentId())
+                        .flatMap(departmentId -> {
+                            return departmentRepository.findById(departmentId);
+                        })
+                .map(Department::getName)
+                .orElse(null);
+        eventPublisher.publishEvent(new EmployeeLogEvent(employeeUpdateRequest,department));
         return employee;
     }
 

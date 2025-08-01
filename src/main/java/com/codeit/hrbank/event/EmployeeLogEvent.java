@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Getter
 @NoArgsConstructor
@@ -39,7 +40,11 @@ public class EmployeeLogEvent {
         this.position = employeeUpdateRequest.position();
         this.departmentName = departmentName;
         this.email = employeeUpdateRequest.email();
-        this.status = employeeUpdateRequest.status().toString();
+        this.status = Optional.ofNullable(employeeUpdateRequest.status())
+                .map(es -> {
+                    return es.toString();
+                })
+                .orElse(null);
         this.employeeNumber = null;
         this.logStatus = ChangeLogType.UPDATE;
         this.memo = employeeUpdateRequest.memo();
