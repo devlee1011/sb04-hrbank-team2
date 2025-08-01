@@ -1,16 +1,19 @@
 package com.codeit.hrbank.employee.service;
 
+import com.codeit.hrbank.change_log.entity.ChangeLogType;
 import com.codeit.hrbank.department.entity.Department;
 import com.codeit.hrbank.department.repository.DepartmentRepository;
 import com.codeit.hrbank.employee.dto.request.EmployeeCreateRequest;
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.repository.EmployeeRepository;
+import com.codeit.hrbank.event.EmployeeLogEvent;
 import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import com.codeit.hrbank.stored_file.repository.StoredFileRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,6 +23,7 @@ import java.util.Optional;
 public class BasicEmployeeService implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final StoredFileRepository storedFileRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final DepartmentRepository departmentRepository;
 
     @Transactional
@@ -45,6 +49,7 @@ public class BasicEmployeeService implements EmployeeService {
                                 savedEmployee.getId())
         );
         employeeRepository.save(savedEmployee);
+        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.CREATE);
         return savedEmployee;
     }
 
