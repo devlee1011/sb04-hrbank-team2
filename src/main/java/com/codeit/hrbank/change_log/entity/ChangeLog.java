@@ -1,7 +1,8 @@
 package com.codeit.hrbank.change_log.entity;
 
-import com.codeit.hrbank.base_entity.BaseEntity;
+import com.codeit.hrbank.base.entity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,4 +31,11 @@ public class ChangeLog extends BaseEntity {
 
     @OneToMany(mappedBy = "changeLog", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<ChangeLog> changeLogs = new ArrayList<>();
+
+    public ChangeLog(ChangeLogType type, String employeeNumber, String memo, String ipAddress) {
+        this.type = type;
+        this.employeeNumber = employeeNumber;
+        this.memo = memo;
+        this.ipAddress = ipAddress;
+    }
 }
