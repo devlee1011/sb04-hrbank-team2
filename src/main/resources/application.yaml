@@ -19,7 +19,7 @@ spring:
       enabled: always
   sql:
     init:
-      mode: always
+      mode: never
 
 springdoc:
   swagger-ui:
@@ -33,3 +33,7 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+
+hrbank:
+  local:
+    path: localFile
