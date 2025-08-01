@@ -32,7 +32,7 @@ public class EmployeeController {
 
     @GetMapping("/{id}")
     public ResponseEntity get(@PathVariable long id) {
-        Employee employee = employeeService.getById(id);
+        Employee employee = employeeService.getEmployee(id);
         EmployeeDto employeeDto = employeeMapper.toDto(employee);
         return ResponseEntity.ok(employeeDto);
     }

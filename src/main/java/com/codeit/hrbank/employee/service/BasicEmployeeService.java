@@ -19,7 +19,7 @@ public class BasicEmployeeService implements EmployeeService {
     private final StoredFileRepository storedFileRepository;
 
     @Override
-    public Employee getById(Long id) {
+    public Employee getEmployee(Long id) {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
         return employee;
     }
