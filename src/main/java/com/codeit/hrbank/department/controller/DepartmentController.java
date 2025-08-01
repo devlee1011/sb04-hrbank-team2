@@ -3,6 +3,7 @@ package com.codeit.hrbank.department.controller;
 import com.codeit.hrbank.base.dto.PageResponse;
 import com.codeit.hrbank.department.dto.DepartmentProjection;
 import com.codeit.hrbank.department.dto.request.DepartmentGetAllRequest;
+import com.codeit.hrbank.department.dto.response.CursorPageResponseDepartmentDto;
 import com.codeit.hrbank.department.dto.response.DepartmentDto;
 import com.codeit.hrbank.department.mapper.DepartmentMapper;
 import com.codeit.hrbank.department.service.DepartmentService;
@@ -24,7 +25,7 @@ public class DepartmentController {
     private final DepartmentMapper departmentMapper;
 
     @GetMapping
-    public ResponseEntity<PageResponse<DepartmentDto>> getAllDepartments(
+    public ResponseEntity<CursorPageResponseDepartmentDto<DepartmentDto>> getAllDepartments(
             @RequestParam(required = false) String nameOrDescription,
             @RequestParam(required = false) Long idAfter,
             @RequestParam(required = false) String cursor,
