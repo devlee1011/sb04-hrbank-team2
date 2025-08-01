@@ -1,5 +1,6 @@
 package com.codeit.hrbank.employee.service;
 
+import com.codeit.hrbank.change_log.dto.EventLogDto;
 import com.codeit.hrbank.change_log.entity.ChangeLogType;
 import com.codeit.hrbank.department.entity.Department;
 import com.codeit.hrbank.department.repository.DepartmentRepository;
@@ -26,6 +27,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -113,7 +116,8 @@ public class BasicEmployeeService implements EmployeeService {
                         savedEmployee.getId())
         );
         employeeRepository.save(savedEmployee);
-        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.CREATE,employeeCreateRequest.memo(), getClientIp(httpServletRequest)));
+        List<EventLogDto> logs = createLogForCreate(savedEmployee);
+        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.CREATE,employeeCreateRequest.memo(), getClientIp(httpServletRequest), savedEmployee.getEmployeeNumber()));
         return savedEmployee;
     }
 
@@ -128,24 +132,40 @@ public class BasicEmployeeService implements EmployeeService {
         }
 
         Employee findEmployee = employeeRepository.findById(id).orElse(null);
-
+        List<EventLogDto> logs = new ArrayList<>();
         Optional.ofNullable(employeeUpdateRequest.name())
-                .ifPresent(findEmployee::setName);
+                .ifPresent(name -> {
+                    logs.add(new EventLogDto("name",findEmployee.getName(),name));
+                    findEmployee.setName(name);
+                });
         Optional.ofNullable(employeeUpdateRequest.email())
-                .ifPresent(findEmployee::setEmail);
+                .ifPresent(email -> {
+                    logs.add(new EventLogDto("email",findEmployee.getEmail(),email));
+                    findEmployee.setEmail(email);
+                });
 
         Optional.ofNullable(employeeUpdateRequest.departmentId())
                 .ifPresent(departmentId -> {
                     Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId()).orElse(null);
+                    logs.add(new EventLogDto("DepartmentName", findEmployee.getDepartment().getName(),findDepartment.getName()));
                     findEmployee.setDepartment(findDepartment);
                 });
 
         Optional.ofNullable(employeeUpdateRequest.position())
-                .ifPresent(findEmployee::setPosition);
+                .ifPresent(position -> {
+                    logs.add(new EventLogDto("position",findEmployee.getPosition(),position));
+                    findEmployee.setPosition(position);
+                });
         Optional.ofNullable(employeeUpdateRequest.hireDate())
-                .ifPresent(findEmployee::setHireDate);
+                .ifPresent(hireDate -> {
+                    logs.add(new EventLogDto("hireDate",String.valueOf(findEmployee.getHireDate()),String.valueOf(hireDate)));
+                    findEmployee.setHireDate(hireDate);
+                });
         Optional.ofNullable(employeeUpdateRequest.status())
-                .ifPresent(findEmployee::setStatus);
+                .ifPresent(status -> {
+                    logs.add(new EventLogDto("status",String.valueOf(findEmployee.getStatus()),String.valueOf(status)));
+                    findEmployee.setStatus(status);
+                });
 
         Optional.ofNullable(newProfileId).ifPresent(storedFileId -> {  // 변경할 프로필이 있으면 삭제 후 등록
             Optional.ofNullable(findEmployee.getProfile()).ifPresent(storedFileRepository::delete);
@@ -153,15 +173,8 @@ public class BasicEmployeeService implements EmployeeService {
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.STORED_FILE_NOT_FOUND));
             findEmployee.setProfile(profile);
         });
-
         Employee employee = employeeRepository.save(findEmployee);
-        String department = Optional.ofNullable(employeeUpdateRequest.departmentId())
-                .flatMap(departmentId -> {
-                    return departmentRepository.findById(departmentId);
-                })
-                .map(Department::getName)
-                .orElse(null);
-        eventPublisher.publishEvent(new EmployeeLogEvent(employeeUpdateRequest,department,getClientIp(httpServletRequest)));
+        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.UPDATE, employeeUpdateRequest.memo(), getClientIp(httpServletRequest), employee.getEmployeeNumber()));
         return employee;
     }
 
@@ -169,9 +182,10 @@ public class BasicEmployeeService implements EmployeeService {
     @Override
     public void delete(Long id,HttpServletRequest httpServletRequest) {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
+        List<EventLogDto> logs = createLogForDelete(employee);
         employeeRepository.deleteById(id);
 
-        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.DELETE,"직원삭제",getClientIp(httpServletRequest)));
+        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.DELETE, "직원삭제", getClientIp(httpServletRequest), employee.getEmployeeNumber()));
     }
 
     private void isDuplicateEmail(String email) {
@@ -194,5 +208,28 @@ public class BasicEmployeeService implements EmployeeService {
         }
 
         return request.getRemoteAddr();
+    }
+
+    private List<EventLogDto> createLogForCreate(Employee employee) {
+        List<EventLogDto> logs = new ArrayList<>();
+        logs.add(new EventLogDto("hireDate","-",String.valueOf(employee.getHireDate())));
+        logs.add(new EventLogDto("name","-",employee.getName()));
+        logs.add(new EventLogDto("position","-",employee.getPosition()));
+        logs.add(new EventLogDto("departmentName","-",employee.getDepartment().getName()));
+        logs.add(new EventLogDto("email","-",employee.getEmail()));
+        logs.add(new EventLogDto("status" ,"-",employee.getStatus().toString()));
+        logs.add(new EventLogDto("employeeNumber","-",employee.getEmployeeNumber()));
+        return logs;
+    }
+
+    private List<EventLogDto> createLogForDelete(Employee employee) {
+        List<EventLogDto> logs = new ArrayList<>();
+        logs.add(new EventLogDto("hireDate",String.valueOf(employee.getHireDate()),"-"));
+        logs.add(new EventLogDto("name",employee.getName(),"-"));
+        logs.add(new EventLogDto("position",employee.getPosition(),"-"));
+        logs.add(new EventLogDto("departmentName",employee.getDepartment().getName(),"-"));
+        logs.add(new EventLogDto("email",employee.getEmail(),"-"));
+        logs.add(new EventLogDto("status",employee.getStatus().toString() ,"-"));
+        return logs;
     }
 }
