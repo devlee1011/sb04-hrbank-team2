@@ -22,7 +22,7 @@ public class StoredFileController implements StoredFileApi {
   @Override
   @PostMapping
   public void createStoredFile(@RequestPart(value = "file") MultipartFile file) {
-    storedFileService.createStoredFile(file);
+     storedFileService.createStoredFile(file);
   }
 
   @Override

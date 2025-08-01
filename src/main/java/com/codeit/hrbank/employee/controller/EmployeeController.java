@@ -59,4 +59,17 @@ public class EmployeeController {
         EmployeeDto response = employeeMapper.toDto(employee);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity get(@PathVariable long id) {
+        Employee employee = employeeService.getEmployee(id);
+        EmployeeDto employeeDto = employeeMapper.toDto(employee);
+        return ResponseEntity.ok(employeeDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity delete(@PathVariable("id") Long id) {
+        employeeService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

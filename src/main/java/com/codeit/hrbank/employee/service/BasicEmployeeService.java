@@ -17,6 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import java.util.Optional;
 
 @Service
@@ -26,6 +29,12 @@ public class BasicEmployeeService implements EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final StoredFileRepository storedFileRepository;
+
+    @Override
+    public Employee getEmployee(Long id) {
+        Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
+        return employee;
+    }
 
     @Transactional
     @Override
@@ -102,11 +111,26 @@ public class BasicEmployeeService implements EmployeeService {
         return employee;
     }
 
+    @Transactional
+    @Override
+    public void delete(Long id) {
+        Map<String,String> changes = new HashMap<>();
+        validateEmployee(id);
+        Employee employee = employeeRepository.findById(id).orElse(null);
+        employeeRepository.deleteById(id);
+
+        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.DELETE,"직원삭제"));
+    }
+
     private void isDuplicateEmail(String email) {
         if(!employeeRepository.existsByEmail(email)) throw new BusinessLogicException(ExceptionCode.EMAIL_ALREADY_EXISTS);
     }
 
     private void isDuplicateDepartment(Long departmentId) {
         if(!departmentRepository.existsById(departmentId)) throw new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND);
+    }
+
+    private void validateEmployee(Long id) {
+        if(!employeeRepository.existsById(id)) throw new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND);
     }
 }
