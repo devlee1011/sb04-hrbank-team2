@@ -36,7 +36,7 @@ public class EmployeeController {
                                  @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
         Long storedFileId = Optional.ofNullable(profile)
                 .map(file -> {
-                    StoredFile StoredFile = StoredFileService.create(profile);
+                    StoredFile StoredFile = storedFileService.createStoredFile(profile);
                     return StoredFile.getId();
                 })
                 .orElse(null);

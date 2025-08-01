@@ -17,7 +17,7 @@ create table files
 (
     id         bigserial
         primary key,
-    filename   varchar(50)                                        not null,
+    file_name   varchar(50)                                        not null,
     type       varchar(50)                                        not null,
     size       bigint                                             not null,
     created_at timestamp with time zone default CURRENT_TIMESTAMP not null
@@ -106,5 +106,8 @@ create table employee_change_details
 
 alter table employee_change_details
     owner to hrbank_user;
+
+alter table employees
+drop constraint employees_department_id_fkey;
 
 
