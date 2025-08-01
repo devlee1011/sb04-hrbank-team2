@@ -94,6 +94,7 @@ public class BasicEmployeeService implements EmployeeService {
     @Override
     public Employee create(EmployeeCreateRequest employeeCreateRequest, Long profileId) {
         isDuplicateEmail(employeeCreateRequest.email());
+
         if (profileId == null) {
             System.out.println("이미지가 포함되지 않아 기본 프로필로 설정됩니다.");
         }
@@ -124,7 +125,7 @@ public class BasicEmployeeService implements EmployeeService {
             isDuplicateEmail(employeeUpdateRequest.email());
         }
         if (employeeUpdateRequest.departmentId() != null){
-            isDuplicateDepartment(employeeUpdateRequest.departmentId());
+            validateDepartment(employeeUpdateRequest.departmentId());
         }
 
         Employee findEmployee = employeeRepository.findById(id).orElse(null);
@@ -177,10 +178,10 @@ public class BasicEmployeeService implements EmployeeService {
     }
 
     private void isDuplicateEmail(String email) {
-        if(!employeeRepository.existsByEmail(email)) throw new BusinessLogicException(ExceptionCode.EMAIL_ALREADY_EXISTS);
+        if(employeeRepository.existsByEmail(email)) throw new BusinessLogicException(ExceptionCode.EMAIL_ALREADY_EXISTS);
     }
 
-    private void isDuplicateDepartment(Long departmentId) {
+    private void validateDepartment(Long departmentId) {
         if(!departmentRepository.existsById(departmentId)) throw new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND);
     }
 
