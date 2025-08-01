@@ -1,6 +1,6 @@
 package com.codeit.hrbank.backup.entitiy;
 
-import com.codeit.hrbank.base_entity.BaseEntity;
+import com.codeit.hrbank.base.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

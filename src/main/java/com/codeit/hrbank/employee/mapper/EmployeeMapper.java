@@ -12,6 +12,4 @@ public interface EmployeeMapper {
     @Mapping(target = "departmentName", expression = "java(employee.getDepartment().getName())")
     @Mapping(target = "profileImageId", expression = "java(employee.getProfile() != null ? employee.getProfile().getId() : null)")
     EmployeeDto toDto(Employee employee);
-
-    EmployeeGetAllRequest toGetAllRequest(EmployeeDto dto);
 }

@@ -1,6 +1,6 @@
 package com.codeit.hrbank.change_log.entity;
 
-import com.codeit.hrbank.base_entity.BaseEntity;
+import com.codeit.hrbank.base.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
