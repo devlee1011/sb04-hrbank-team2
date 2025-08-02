@@ -18,13 +18,13 @@ import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class BasicDepartmentService implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     //
     private final EmployeeRepository employeeRepository;
 
+    @Transactional(readOnly = true)
     @Override
     public Page<Department> getAllDepartments(DepartmentGetAllRequest departmentGetAllRequest) {
         // 검색 필드, 정렬 방향 초기화
