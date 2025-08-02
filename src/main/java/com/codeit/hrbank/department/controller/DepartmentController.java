@@ -24,7 +24,7 @@ public class DepartmentController {
     @PostMapping
     public ResponseEntity<DepartmentDto> create(@RequestBody DepartmentCreateRequest departmentCreateRequest) {
         Department department = departmentService.create(departmentMapper.toEntity(departmentCreateRequest));
-        Long employeeCount = department.getEmployees() != null ? department.getEmployees().size() : 0L;
+        Long employeeCount = departmentService.getEmployeeCountByDepartmentId(department.getId());
         DepartmentDto departmentDto = departmentMapper.toDto(department, employeeCount);
 
         return ResponseEntity
