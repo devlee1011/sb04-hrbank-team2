@@ -4,6 +4,7 @@ import com.codeit.hrbank.department.dto.request.DepartmentGetAllRequest;
 import com.codeit.hrbank.department.entity.Department;
 import com.codeit.hrbank.department.repository.DepartmentRepository;
 import com.codeit.hrbank.department.specification.DepartmentSpecification;
+import com.codeit.hrbank.employee.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,11 +22,13 @@ import java.time.LocalDate;
 public class BasicDepartmentService implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    //
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public Page<Department> getAllDepartments(DepartmentGetAllRequest departmentGetAllRequest) {
         // 검색 필드, 정렬 방향 초기화
-        String sortField = departmentGetAllRequest.sortField() == null ? "name" : departmentGetAllRequest.sortField();
+        String sortField = departmentGetAllRequest.sortField() == null || departmentGetAllRequest.sortField().isEmpty() ? "name" : departmentGetAllRequest.sortField();
         String sortDirection = departmentGetAllRequest.sortDirection() == null ? "asc" : departmentGetAllRequest.sortDirection();
 
         Specification<Department> spec = Specification.unrestricted();
@@ -80,5 +83,10 @@ public class BasicDepartmentService implements DepartmentService {
             default -> pageable = PageRequest.ofSize(pageSize).withSort(Sort.by(sortField).ascending());
         }
         return departmentRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public Long getEmployeeCountByDepartmentId(Long departmentId) {
+        return employeeRepository.countByDepartmentId(departmentId);
     }
 }

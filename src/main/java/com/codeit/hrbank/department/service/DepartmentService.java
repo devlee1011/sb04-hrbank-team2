@@ -1,10 +1,11 @@
 package com.codeit.hrbank.department.service;
 
-import com.codeit.hrbank.department.dto.DepartmentProjection;
 import com.codeit.hrbank.department.dto.request.DepartmentGetAllRequest;
-
-import java.util.List;
+import com.codeit.hrbank.department.entity.Department;
+import org.springframework.data.domain.Page;
 
 public interface DepartmentService {
-    List<DepartmentProjection> getAllDepartments(DepartmentGetAllRequest pageRequest);
+    Page<Department> getAllDepartments(DepartmentGetAllRequest pageRequest);
+
+    Long getEmployeeCountByDepartmentId(Long departmentId);
 }
