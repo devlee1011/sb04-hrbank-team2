@@ -15,13 +15,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class BasicDepartmentService implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     //
     private final EmployeeRepository employeeRepository;
 
+    @Transactional
     @Override
     public Department update(DepartmentUpdateRequest departmentUpdateRequest, Long id) {
         Department department = departmentRepository.findById(id)
