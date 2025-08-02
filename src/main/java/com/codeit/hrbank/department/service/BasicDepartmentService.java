@@ -1,5 +1,6 @@
 package com.codeit.hrbank.department.service;
 
+import com.codeit.hrbank.department.entity.Department;
 import com.codeit.hrbank.department.repository.DepartmentRepository;
 import com.codeit.hrbank.employee.repository.EmployeeRepository;
 import com.codeit.hrbank.exception.BusinessLogicException;
@@ -19,9 +20,14 @@ public class BasicDepartmentService implements DepartmentService {
 
     @Override
     public void delete(Long id) {
-        if (!departmentRepository.existsById(id)) {
-            throw new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND);
+        Department department = departmentRepository.findById(id)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
+
+        // 소속 직원이 있는 부서는 삭제 불가
+        if (getEmployeeCountByDepartmentId(department.getId()) > 0) {
+            throw new BusinessLogicException(ExceptionCode.DEPARTMENT_HAS_EMPLOYEE_CANNOT_DELETE);
         }
+
         departmentRepository.deleteById(id);
     }
 
