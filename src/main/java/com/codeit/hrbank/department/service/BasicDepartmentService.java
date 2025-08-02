@@ -3,6 +3,7 @@ package com.codeit.hrbank.department.service;
 import com.codeit.hrbank.department.dto.request.DepartmentUpdateRequest;
 import com.codeit.hrbank.department.entity.Department;
 import com.codeit.hrbank.department.repository.DepartmentRepository;
+import com.codeit.hrbank.employee.repository.EmployeeRepository;
 import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import java.util.Optional;
 public class BasicDepartmentService implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    //
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public Department update(DepartmentUpdateRequest departmentUpdateRequest, Long id) {
@@ -25,6 +28,7 @@ public class BasicDepartmentService implements DepartmentService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
 
         // departmentUpdateRequest에 수정할 항목이 비어있으면 기존 값 유지
+
         String newName = Optional.ofNullable(departmentUpdateRequest.name())
                 .filter(name -> !name.isBlank())
                 .orElse(department.getName());
@@ -45,5 +49,9 @@ public class BasicDepartmentService implements DepartmentService {
         return departmentRepository.save(department);
     }
 
+    @Override
+    public Long getEmployeeCountByDepartmentId(Long departmentId) {
+        return employeeRepository.countByDepartmentId(departmentId);
+    }
 
 }

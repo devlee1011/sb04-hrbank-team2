@@ -6,4 +6,6 @@ import com.codeit.hrbank.department.entity.Department;
 public interface DepartmentService {
 
     Department update(DepartmentUpdateRequest departmentUpdateRequest, Long id);
+
+    Long getEmployeeCountByDepartmentId(Long departmentId);
 }
