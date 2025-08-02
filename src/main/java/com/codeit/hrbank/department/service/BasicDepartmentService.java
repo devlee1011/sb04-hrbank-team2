@@ -7,6 +7,7 @@ import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class BasicDepartmentService implements DepartmentService {
     private final EmployeeRepository employeeRepository;
 
     @Override
+    @Transactional
     public Department create(Department department) {
 
         String name = department.getName();
