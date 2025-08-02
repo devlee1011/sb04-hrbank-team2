@@ -17,7 +17,7 @@ create table files
 (
     id         bigserial
         primary key,
-    filename   varchar(50)                                        not null,
+    file_name   varchar(50)                                        not null,
     type       varchar(50)                                        not null,
     size       bigint                                             not null,
     created_at timestamp with time zone default CURRENT_TIMESTAMP not null
