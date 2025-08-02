@@ -8,15 +8,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/change-logs")
 public class ChangeLogController {
     private final ChangeLogService changeLogService;
     private final ChangeLogMapper changeLogMapper;
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/diffs")
     public ResponseEntity get(@PathVariable Long id) {
         ChangeLogDetail changeLogDetail = changeLogService.getChangeLogDetail(id);
         DiffDto response = changeLogMapper.toDto(changeLogDetail);
