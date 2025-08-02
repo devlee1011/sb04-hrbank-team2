@@ -9,10 +9,7 @@ import com.codeit.hrbank.department.mapper.DepartmentMapper;
 import com.codeit.hrbank.department.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,20 +22,7 @@ public class DepartmentController {
     private final DepartmentMapper departmentMapper;
 
     @GetMapping
-    public ResponseEntity<CursorPageResponseDepartmentDto<DepartmentDto>> getAllDepartments(
-            @RequestParam(required = false) String nameOrDescription,
-            @RequestParam(required = false) Long idAfter,
-            @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "establishedDate") String sortField,
-            @RequestParam(defaultValue = "asc") String sortDirection
-    ) {
-        DepartmentGetAllRequest departmentGetAllRequest = new DepartmentGetAllRequest(
-                nameOrDescription, idAfter, cursor, size, sortField, sortDirection
-        );
-
-
-
+    public ResponseEntity<CursorPageResponseDepartmentDto<DepartmentDto>> getAll(@ModelAttribute("departmentGetAllRequest") DepartmentGetAllRequest departmentGetAllRequest) {
         List<DepartmentProjection> departmentProjections = departmentService.getAllDepartments();
         List<DepartmentDto> departmentDtos = departmentProjections.stream()
                 .map(departmentProjection -> departmentMapper.toDto(
