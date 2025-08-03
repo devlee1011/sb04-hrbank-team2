@@ -7,6 +7,8 @@ import com.codeit.hrbank.employee.dto.request.EmployeeCreateRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
 import com.codeit.hrbank.employee.entity.Employee;
+import com.codeit.hrbank.employee.entity.EmployeeStatus;
+import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
 import com.codeit.hrbank.employee.repository.EmployeeRepository;
 import com.codeit.hrbank.employee.specification.EmployeeSpecification;
 import com.codeit.hrbank.event.EmployeeLogEvent;
@@ -25,6 +27,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -171,6 +174,25 @@ public class BasicEmployeeService implements EmployeeService {
         employeeRepository.deleteById(id);
 
         eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.DELETE,"직원삭제"));
+    }
+
+    @Override
+    public long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate) {
+        if (fromDate == null) fromDate = LocalDate.of(1900, 1, 1);
+        if (toDate == null) toDate = LocalDate.now();
+        return employeeRepository.countByStatusAndHireDateBetween(status,fromDate,toDate);
+    }
+
+    @Override
+    public List<EmployeeDistributionProjection> getDistribution(String groupBy, EmployeeStatus status) {
+//        long employeeCount = getCount(status, null, null);
+//        List<EmployeeDistributionProjection> employeeDistributionProjections = new ArrayList<>();
+
+        return switch(groupBy) {
+            case "department" -> employeeRepository.countByDepartmentAndStatusEquals(status);
+            case "position" -> employeeRepository.countByPositionAndStatusEquals(status);
+            default -> employeeRepository.countByDepartmentAndStatusEquals(status);
+        };
     }
 
     private void isDuplicateEmail(String email) {
