@@ -12,7 +12,9 @@ public class DepartmentSpecification {
     public static Specification<Department> likeName(String name) {
         return (root, query, criteriaBuilder) -> {
             if (name == null) return null;
-            return criteriaBuilder.like(root.get("name"), "%" + name.trim().toLowerCase() + "%");
+            return criteriaBuilder.like(
+                    criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("name"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                    "%" + name.trim().toLowerCase().replaceAll("\\s+", "") + "%");
         };
     }
 
@@ -20,7 +22,9 @@ public class DepartmentSpecification {
     public static Specification<Department> likeDescription(String description) {
         return (root, query, criteriaBuilder) -> {
             if (description == null) return null;
-            return criteriaBuilder.like(root.get("description"), "%" + description.trim().toLowerCase() + "%");
+            return criteriaBuilder.like(
+                    criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("description"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                    "%" + description.trim().toLowerCase().replaceAll("\\s+", "") + "%");
         };
     }
 
