@@ -1,14 +1,21 @@
 package com.codeit.hrbank.employee.entity;
 
-import com.codeit.hrbank.base.entity.BaseUpdatableEntity;
+import com.codeit.hrbank.base_entity.BaseUpdatableEntity;
 import com.codeit.hrbank.department.entity.Department;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDate;
 
 @Getter
 @Setter
