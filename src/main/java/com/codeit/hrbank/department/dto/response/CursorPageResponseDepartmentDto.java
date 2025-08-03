@@ -18,7 +18,7 @@ public record CursorPageResponseDepartmentDto<T>(
         @Schema(type = "boolean")
         boolean hasNext
 ) {
-    public static <T> CursorPageResponseDepartmentDto from(Page<T> page, Long idAfter, String cursor) {
+    public static <T> CursorPageResponseDepartmentDto<T> from(Page<T> page, Long idAfter, String cursor) {
         return new CursorPageResponseDepartmentDto<>(
                 page.getContent(),
                 cursor,
