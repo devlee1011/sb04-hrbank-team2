@@ -5,7 +5,9 @@ import com.codeit.hrbank.employee.dto.EmployeeDto;
 import com.codeit.hrbank.employee.dto.request.EmployeeCreateRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
+import com.codeit.hrbank.employee.dto.response.EmployeeDistributionDto;
 import com.codeit.hrbank.employee.entity.Employee;
+import com.codeit.hrbank.employee.entity.EmployeeStatus;
 import com.codeit.hrbank.employee.mapper.EmployeeMapper;
 import com.codeit.hrbank.employee.service.EmployeeService;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
@@ -21,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @RestController
@@ -97,5 +100,17 @@ public class EmployeeController {
                                  HttpServletRequest httpServletRequest) {
         employeeService.delete(id,httpServletRequest);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity count(@RequestParam EmployeeStatus status, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate) {
+        long count = employeeService.getCount(status,fromDate,toDate);
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/stats/distribution")
+    public ResponseEntity distribution(@RequestParam(defaultValue = "department") String groupBy, @RequestParam(defaultValue = "ACTIVE") EmployeeStatus status) {
+        EmployeeDistributionDto response = employeeService.getDistribution(groupBy,status);
+        return ResponseEntity.ok(response);
     }
 }

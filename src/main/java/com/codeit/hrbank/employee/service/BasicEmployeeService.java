@@ -7,7 +7,9 @@ import com.codeit.hrbank.department.repository.DepartmentRepository;
 import com.codeit.hrbank.employee.dto.request.EmployeeCreateRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
+import com.codeit.hrbank.employee.dto.response.EmployeeDistributionDto;
 import com.codeit.hrbank.employee.entity.Employee;
+import com.codeit.hrbank.employee.entity.EmployeeStatus;
 import com.codeit.hrbank.employee.repository.EmployeeRepository;
 import com.codeit.hrbank.employee.specification.EmployeeSpecification;
 import com.codeit.hrbank.event.EmployeeLogEvent;
@@ -231,5 +233,25 @@ public class BasicEmployeeService implements EmployeeService {
         logs.add(new DiffDto("email",employee.getEmail(),"-"));
         logs.add(new DiffDto("status",employee.getStatus().toString() ,"-"));
         return logs;
+    }
+
+    @Override
+    public long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate) {
+        if (fromDate == null) fromDate = LocalDate.MIN;
+        if (toDate == null) toDate = LocalDate.now();
+        return employeeRepository.countByStatusAndHireDateBetween(status,fromDate,toDate);
+    }
+
+    @Override
+    public EmployeeDistributionDto getDistribution(String groupBy, EmployeeStatus status) {
+        long count = 0L;
+        if (groupBy.equals("department")) {
+            count = employeeRepository.countByDepartmentAndStatusEquals(groupBy,status);
+            return new EmployeeDistributionDto(groupBy,count,count/getCount(status,null,null));
+        }
+        if (groupBy.equals("position")) {
+            count = employeeRepository.countByPositionAndStatusEquals(groupBy,status);
+        }
+        return new EmployeeDistributionDto(groupBy,count, (double) count /getCount(status,null,null));
     }
 }
