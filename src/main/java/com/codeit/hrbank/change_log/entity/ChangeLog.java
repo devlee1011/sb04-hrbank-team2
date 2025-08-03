@@ -2,13 +2,9 @@ package com.codeit.hrbank.change_log.entity;
 
 import com.codeit.hrbank.base_entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -28,9 +24,6 @@ public class ChangeLog extends BaseEntity {
 
     @Column(nullable = false, length = 45)
     private String ipAddress;
-
-//    @OneToMany(mappedBy = "changeLog", cascade = {CascadeType.ALL}, orphanRemoval = true)
-//    private List<ChangeLogDetail> changeLogDetails = new ArrayList<>();
 
     public ChangeLog(ChangeLogType type, String employeeNumber, String memo, String ipAddress) {
         this.type = type;

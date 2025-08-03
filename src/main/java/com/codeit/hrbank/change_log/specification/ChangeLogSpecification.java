@@ -9,7 +9,6 @@ import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 public class ChangeLogSpecification {
 
