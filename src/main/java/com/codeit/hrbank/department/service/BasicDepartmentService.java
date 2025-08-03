@@ -20,7 +20,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -114,16 +113,11 @@ public class BasicDepartmentService implements DepartmentService {
 
         // departmentUpdateRequest에 수정할 항목이 비어있으면 기존 값 유지
 
-        String newName = Optional.ofNullable(departmentUpdateRequest.name())
-                .filter(StringUtils::hasText)
-                .orElse(department.getName());
+        String newName = StringUtils.hasText(departmentUpdateRequest.name()) ? departmentUpdateRequest.name() : department.getName();
 
-        String newDescription = Optional.ofNullable(departmentUpdateRequest.description())
-                .filter(StringUtils::hasText)
-                .orElse(department.getDescription());
+        String newDescription = StringUtils.hasText(departmentUpdateRequest.description()) ? departmentUpdateRequest.description() : department.getDescription();
 
-        LocalDate newEstablishedDate = Optional.ofNullable(departmentUpdateRequest.establishedDate())
-                .orElse(department.getEstablishedDate());
+        LocalDate newEstablishedDate = (departmentUpdateRequest.establishedDate() != null) ? departmentUpdateRequest.establishedDate() : department.getEstablishedDate();
 
         // 이름이 중복되면 안됨
         if (!newName.equals(department.getName()) && departmentRepository.existsByName(newName)) {
@@ -149,7 +143,7 @@ public class BasicDepartmentService implements DepartmentService {
         if (getEmployeeCountByDepartmentId(department.getId()) > 0L) {
             throw new BusinessLogicException(ExceptionCode.DEPARTMENT_HAS_EMPLOYEE_CANNOT_DELETE);
         }
-        departmentRepository.deleteById(id);
+        departmentRepository.delete(department);
     }
 
     @Override
