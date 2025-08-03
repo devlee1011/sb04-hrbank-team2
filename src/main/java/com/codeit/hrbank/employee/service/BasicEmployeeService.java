@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -37,8 +38,8 @@ public class BasicEmployeeService implements EmployeeService {
 
     @Override
     public Page<Employee> getAll(EmployeeGetAllRequest employeeGetAllRequest) {
-        String sortField = employeeGetAllRequest.sortField() == null ? "name" : employeeGetAllRequest.sortField();
-        String sortDirection = employeeGetAllRequest.sortDirection() == null ? "asc" : employeeGetAllRequest.sortDirection();
+        String sortField = StringUtils.hasText(employeeGetAllRequest.sortField()) ? employeeGetAllRequest.sortField() : "name";
+        String sortDirection = StringUtils.hasText(employeeGetAllRequest.sortDirection()) ? employeeGetAllRequest.sortDirection() : "asc";
         Specification<Employee> spec = Specification.unrestricted();
         if ("asc".equalsIgnoreCase(sortDirection)) {
             if ("name".equals(sortField)) {
@@ -99,7 +100,12 @@ public class BasicEmployeeService implements EmployeeService {
         StoredFile profile = Optional.ofNullable(profileId)
                 .flatMap(storedFileRepository::findById)
                 .orElse(null);
-        Department department = departmentRepository.findById(employeeCreateRequest.departmentId()).orElse(null);
+
+        Long departmentId = Optional.ofNullable(employeeCreateRequest.departmentId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_CANNOT_BE_NULL));
+
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
         Employee employee = new Employee(
                 employeeCreateRequest.name(), employeeCreateRequest.email(),
                 department, employeeCreateRequest.position(),
@@ -126,23 +132,31 @@ public class BasicEmployeeService implements EmployeeService {
             validateDepartment(employeeUpdateRequest.departmentId());
         }
 
-        Employee findEmployee = employeeRepository.findById(id).orElse(null);
+        Employee findEmployee = employeeRepository.findById(id)
+                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
 
         Optional.ofNullable(employeeUpdateRequest.name())
+                .filter(StringUtils::hasText)
                 .ifPresent(findEmployee::setName);
+
         Optional.ofNullable(employeeUpdateRequest.email())
+                .filter(StringUtils::hasText)
                 .ifPresent(findEmployee::setEmail);
 
         Optional.ofNullable(employeeUpdateRequest.departmentId())
                 .ifPresent(departmentId -> {
-                    Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId()).orElse(null);
+                    Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId())
+                                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
                     findEmployee.setDepartment(findDepartment);
                 });
 
         Optional.ofNullable(employeeUpdateRequest.position())
+                .filter(StringUtils::hasText)
                 .ifPresent(findEmployee::setPosition);
+
         Optional.ofNullable(employeeUpdateRequest.hireDate())
                 .ifPresent(findEmployee::setHireDate);
+
         Optional.ofNullable(employeeUpdateRequest.status())
                 .ifPresent(findEmployee::setStatus);
 
@@ -155,9 +169,7 @@ public class BasicEmployeeService implements EmployeeService {
 
         Employee employee = employeeRepository.save(findEmployee);
         String department = Optional.ofNullable(employeeUpdateRequest.departmentId())
-                .flatMap(departmentId -> {
-                    return departmentRepository.findById(departmentId);
-                })
+                .flatMap(departmentRepository::findById)
                 .map(Department::getName)
                 .orElse(null);
         eventPublisher.publishEvent(new EmployeeLogEvent(employeeUpdateRequest,department));
