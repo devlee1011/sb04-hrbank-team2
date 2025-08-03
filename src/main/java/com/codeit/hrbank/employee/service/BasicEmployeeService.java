@@ -25,8 +25,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -171,9 +169,7 @@ public class BasicEmployeeService implements EmployeeService {
     @Transactional
     @Override
     public void delete(Long id) {
-        Map<String,String> changes = new HashMap<>();
-        validateEmployee(id);
-        Employee employee = employeeRepository.findById(id).orElse(null);
+        Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
         employeeRepository.deleteById(id);
 
         eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.DELETE,"직원삭제"));
