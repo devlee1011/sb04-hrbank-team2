@@ -3,6 +3,7 @@ package com.codeit.hrbank.department.specification;
 import com.codeit.hrbank.department.entity.Department;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 
@@ -11,7 +12,7 @@ public class DepartmentSpecification {
     // 부분 일치 조건: 이름
     public static Specification<Department> likeName(String name) {
         return (root, query, criteriaBuilder) -> {
-            if (name == null) return null;
+            if (!StringUtils.hasText(name)) return null;
             return criteriaBuilder.like(
                     criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("name"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
                     "%" + name.trim().toLowerCase().replaceAll("\\s+", "") + "%");
@@ -21,7 +22,7 @@ public class DepartmentSpecification {
     // 부분 일치 조건: 설명
     public static Specification<Department> likeDescription(String description) {
         return (root, query, criteriaBuilder) -> {
-            if (description == null) return null;
+            if (!StringUtils.hasText(description)) return null;
             return criteriaBuilder.like(
                     criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("description"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
                     "%" + description.trim().toLowerCase().replaceAll("\\s+", "") + "%");
