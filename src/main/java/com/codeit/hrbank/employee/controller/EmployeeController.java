@@ -5,6 +5,7 @@ import com.codeit.hrbank.employee.dto.EmployeeDto;
 import com.codeit.hrbank.employee.dto.request.EmployeeCreateRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
+import com.codeit.hrbank.employee.dto.response.CursorPageResponseEmployeeDto;
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.mapper.EmployeeMapper;
 import com.codeit.hrbank.employee.service.EmployeeService;
@@ -48,7 +49,7 @@ public class EmployeeController {
 
         Page<EmployeeDto> employeeDtos = employees
                 .map(employeeMapper::toDto);
-        PageResponse response = PageResponse.from(employeeDtos, idAfter, cursor);
+        CursorPageResponseEmployeeDto response = CursorPageResponseEmployeeDto.from(employeeDtos, idAfter, cursor);
         return ResponseEntity.ok(response);
     }
 

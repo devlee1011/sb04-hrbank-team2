@@ -14,7 +14,7 @@ import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import com.codeit.hrbank.stored_file.repository.StoredFileRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -37,6 +37,7 @@ public class BasicEmployeeService implements EmployeeService {
     private final ApplicationEventPublisher eventPublisher;
     private final StoredFileRepository storedFileRepository;
 
+    @Transactional(readOnly = true)
     @Override
     public Page<Employee> getAll(EmployeeGetAllRequest employeeGetAllRequest) {
         String sortField = employeeGetAllRequest.sortField() == null ? "name" : employeeGetAllRequest.sortField();
@@ -84,6 +85,7 @@ public class BasicEmployeeService implements EmployeeService {
         return findList;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Employee getEmployee(Long id) {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
