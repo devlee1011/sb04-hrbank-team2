@@ -86,7 +86,6 @@ public class BasicDepartmentService implements DepartmentService {
     @Override
     @Transactional
     public Department create(Department department) {
-
         String name = department.getName();
         String description = department.getDescription();
 
@@ -111,8 +110,7 @@ public class BasicDepartmentService implements DepartmentService {
     @Transactional
     @Override
     public Department update(DepartmentUpdateRequest departmentUpdateRequest, Long id) {
-        Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
+        Department department = getDepartment(id);
 
         // departmentUpdateRequest에 수정할 항목이 비어있으면 기존 값 유지
 
@@ -146,8 +144,10 @@ public class BasicDepartmentService implements DepartmentService {
     @Transactional
     @Override
     public void delete(Long id) {
-        if (!departmentRepository.existsById(id)) {
-            throw new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND);
+        Department department = getDepartment(id);
+        // 소속 직원이 있는 부서는 삭제 불가
+        if (getEmployeeCountByDepartmentId(department.getId()) > 0L) {
+            throw new BusinessLogicException(ExceptionCode.DEPARTMENT_HAS_EMPLOYEE_CANNOT_DELETE);
         }
         departmentRepository.deleteById(id);
     }

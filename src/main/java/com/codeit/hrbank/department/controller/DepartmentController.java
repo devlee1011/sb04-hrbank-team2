@@ -23,7 +23,7 @@ public class DepartmentController {
     private final DepartmentMapper departmentMapper;
 
     @GetMapping
-    public ResponseEntity<CursorPageResponseDepartmentDto> getAll(@ModelAttribute("departmentGetAllRequest") DepartmentGetAllRequest departmentGetAllRequest) {
+    public ResponseEntity getAll(@ModelAttribute("departmentGetAllRequest") DepartmentGetAllRequest departmentGetAllRequest) {
         Page<Department> departments = departmentService.getAllDepartments(departmentGetAllRequest);
         if(!departments.hasContent() || departments.getContent().isEmpty()) {
             return ResponseEntity.ok(CursorPageResponseDepartmentDto.from(Page.empty(), null, null));
@@ -37,15 +37,15 @@ public class DepartmentController {
             case "establishedDate" -> cursor = departments.getContent().get(departments.getContent().size() - 1).getEstablishedDate().toString();
         }
 
-        Page<DepartmentDto> departmentDtos = departments
+        Page<DepartmentDto> page = departments
                 .map(department -> departmentMapper.toDto(department, departmentService.getEmployeeCountByDepartmentId(department.getId())));
 
-        CursorPageResponseDepartmentDto response = CursorPageResponseDepartmentDto.from(departmentDtos, idAfter, cursor);
+        CursorPageResponseDepartmentDto<DepartmentDto> response = CursorPageResponseDepartmentDto.from(page, idAfter, cursor);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
-    public ResponseEntity<DepartmentDto> create(@RequestBody DepartmentCreateRequest departmentCreateRequest) {
+    public ResponseEntity create(@RequestBody DepartmentCreateRequest departmentCreateRequest) {
         Department department = departmentService.create(departmentMapper.toEntity(departmentCreateRequest));
         Long employeeCount = departmentService.getEmployeeCountByDepartmentId(department.getId());
         DepartmentDto departmentDto = departmentMapper.toDto(department, employeeCount);
@@ -56,7 +56,7 @@ public class DepartmentController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<DepartmentDto> update(@PathVariable("id") Long id,
+    public ResponseEntity update(@PathVariable("id") Long id,
                                                 @RequestBody DepartmentUpdateRequest departmentUpdateRequest) {
         Department department = departmentService.update(departmentUpdateRequest, id);
         DepartmentDto response = departmentMapper.toDto(department, departmentService.getEmployeeCountByDepartmentId(department.getId()));
@@ -64,14 +64,14 @@ public class DepartmentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DepartmentDto> get(@PathVariable Long id) {
+    public ResponseEntity get(@PathVariable Long id) {
         Department department = departmentService.getDepartment(id);
         DepartmentDto departmentDto = departmentMapper.toDto(department, departmentService.getEmployeeCountByDepartmentId(department.getId()));
         return ResponseEntity.ok(departmentDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity delete(@PathVariable Long id) {
         departmentService.delete(id);
         return ResponseEntity.noContent().build();
     }

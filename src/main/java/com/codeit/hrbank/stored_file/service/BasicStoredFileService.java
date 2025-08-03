@@ -4,11 +4,12 @@ import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import com.codeit.hrbank.stored_file.repository.StoredFileRepository;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,7 @@ public class BasicStoredFileService implements StoredFileService {
   @Override
   public ResponseEntity downloadSoredFile(Long storedFileId) {
     StoredFile storedFile = storedFileRepository.findById(storedFileId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.STOREDFILE_NOT_FOUND));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.STORED_FILE_NOT_FOUND));
 
       return localStoredFileStorage.download(storedFile);
   }
