@@ -1,6 +1,7 @@
 package com.codeit.hrbank.stored_file.entity;
 
-import com.codeit.hrbank.base.entity.BaseEntity;
+
+import com.codeit.hrbank.base_entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

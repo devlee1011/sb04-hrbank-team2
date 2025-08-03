@@ -1,6 +1,6 @@
 package com.codeit.hrbank.employee.controller;
 
-import com.codeit.hrbank.base.dto.PageResponse;
+import com.codeit.hrbank.employee.dto.CursorPageResponseEmployeeDto;
 import com.codeit.hrbank.employee.dto.EmployeeDto;
 import com.codeit.hrbank.employee.dto.request.EmployeeCreateRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
@@ -34,7 +34,7 @@ public class EmployeeController {
     public ResponseEntity getAll(@ModelAttribute("employeeGetAllRequest") EmployeeGetAllRequest employeeGetAllRequest) {
         Page<Employee> employees = employeeService.getAll(employeeGetAllRequest);
         if(!employees.hasContent()) {
-            return ResponseEntity.ok(PageResponse.from(Page.empty(),null,null));
+            return ResponseEntity.ok(CursorPageResponseEmployeeDto.from(Page.empty(),null,null));
         }
         Long idAfter = employees.getContent().get(employees.getContent().size() - 1).getId();
         String cursor = null;
@@ -48,7 +48,7 @@ public class EmployeeController {
 
         Page<EmployeeDto> employeeDtos = employees
                 .map(employeeMapper::toDto);
-        PageResponse response = PageResponse.from(employeeDtos, idAfter, cursor);
+        CursorPageResponseEmployeeDto response = CursorPageResponseEmployeeDto.from(employeeDtos, idAfter, cursor);
         return ResponseEntity.ok(response);
     }
 
