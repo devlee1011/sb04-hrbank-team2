@@ -10,7 +10,8 @@ public enum ExceptionCode {
     NAME_CANNOT_BE_NULL(400, "잘못된 입력입니다.", "이름이 비어있거나 null이 될 수 없습니다."),
     DESCRIPTION_CANNOT_BE_NULL(400, "잘못된 입력입니다.", "설명이 비어있거나 null이 될 수 없습니다."),
     EMAIL_ALREADY_EXISTS(400,"잘못된 입력입니다.","해당 이메일은 이미 존재합니다."),
-    EMPLOYEE_NOT_FOUND(404,"잘못된 요청입니다.", "해당 직원을 찾을 수 없습니다.");
+    EMPLOYEE_NOT_FOUND(404,"잘못된 요청입니다.", "해당 직원을 찾을 수 없습니다."),
+    INVALID_DATE_FORMAT(400, "잘못된 요청입니다.", "날짜 형식이 잘못되었습니다.");
 
 //    USER_NOT_FOUND(404, "User Not Found"),
 //    EMAIL_OR_USERNAME_ALREADY_EXISTS(400, "User With Email Already Exists"),

@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 @Service
@@ -33,51 +33,49 @@ public class BasicDepartmentService implements DepartmentService {
     @Transactional(readOnly = true)
     @Override
     public Page<Department> getAllDepartments(DepartmentGetAllRequest departmentGetAllRequest) {
-        // 검색 필드, 정렬 방향 초기화
-        String sortField = !StringUtils.hasText(departmentGetAllRequest.sortField()) ? "name" : departmentGetAllRequest.sortField();
+        // 정렬 조건, 정렬 방향 초기화
+        String sortField = !StringUtils.hasText(departmentGetAllRequest.sortField()) ? "establishedDate" : departmentGetAllRequest.sortField();
         String sortDirection = !StringUtils.hasText(departmentGetAllRequest.sortDirection()) ? "asc" : departmentGetAllRequest.sortDirection();
+        String cursorRaw = departmentGetAllRequest.cursor();
+        LocalDate cursorDate = getCursorDate(cursorRaw, sortField, sortDirection);
 
         Specification<Department> spec = Specification.unrestricted();
 
         // 정렬 방향 설정
         if ("asc".equalsIgnoreCase(sortDirection)) {
             switch (sortField) {
-                case "name" ->
-                    spec = spec.and(DepartmentSpecification.greaterThanName(
-                            departmentGetAllRequest.idAfter(),
-                            departmentGetAllRequest.cursor())
-                    );
+                case "name" -> spec = spec.and(DepartmentSpecification.greaterThanName(
+                        departmentGetAllRequest.idAfter(),
+                        departmentGetAllRequest.cursor())
+                );
 
-                case "establishedDate" ->
-                    spec = spec.and(DepartmentSpecification.greaterThanEstablishedDate(
-                            departmentGetAllRequest.idAfter(),
-                            LocalDate.parse(departmentGetAllRequest.cursor()))
-                    );
+                case "establishedDate" -> spec = spec.and(DepartmentSpecification.greaterThanEstablishedDate(
+                        departmentGetAllRequest.idAfter(),
+                        cursorDate
+                ));
 
             }
         } else if ("desc".equalsIgnoreCase(sortDirection)) {
             switch (sortField) {
-                case "name" ->
-                    spec = spec.and(DepartmentSpecification.lessThanName(
-                            departmentGetAllRequest.idAfter(),
-                            departmentGetAllRequest.cursor())
-                    );
-                case "establishedDate" ->
-                    spec = spec.and(DepartmentSpecification.lessThanEstablishedDate(
-                            departmentGetAllRequest.idAfter(),
-                            LocalDate.parse(departmentGetAllRequest.cursor()))
-                    );
+                case "name" -> spec = spec.and(DepartmentSpecification.lessThanName(
+                        departmentGetAllRequest.idAfter(),
+                        departmentGetAllRequest.cursor())
+                );
+                case "establishedDate" -> spec = spec.and(DepartmentSpecification.lessThanEstablishedDate(
+                        departmentGetAllRequest.idAfter(),
+                        cursorDate
+                ));
             }
         }
 
-        // 정렬 조건 설정
+        // 검색 필드
         spec = spec.or(DepartmentSpecification.likeName(departmentGetAllRequest.nameOrDescription()));
         spec = spec.or(DepartmentSpecification.likeDescription(departmentGetAllRequest.nameOrDescription()));
 
         // Pageable
         Pageable pageable = null;
         int pageSize = departmentGetAllRequest.size() == null ? 10 : departmentGetAllRequest.size();
-        switch(sortDirection.toLowerCase()) {
+        switch (sortDirection.toLowerCase()) {
             case "asc" -> pageable = PageRequest.ofSize(pageSize).withSort(Sort.by(sortField).ascending());
             case "desc" -> pageable = PageRequest.ofSize(pageSize).withSort(Sort.by(sortField).descending());
             default -> pageable = PageRequest.ofSize(pageSize).withSort(Sort.by(sortField).ascending());
@@ -157,5 +155,29 @@ public class BasicDepartmentService implements DepartmentService {
     @Override
     public Long getEmployeeCountByDepartmentId(Long departmentId) {
         return employeeRepository.countByDepartmentId(departmentId);
+    }
+
+    private LocalDate getCursorDate(String cursorRaw, String sortField, String sortDirection) {
+        LocalDate cursorDate = null;
+
+        if ("establishedDate".equals(sortField)) {
+            if (StringUtils.hasText(cursorRaw)) {
+                try {
+                    cursorDate = LocalDate.parse(cursorRaw);
+                } catch (DateTimeParseException e) {
+                    throw new BusinessLogicException(ExceptionCode.INVALID_DATE_FORMAT);
+                }
+            }
+        }
+
+        if (cursorDate == null) {
+            switch (sortDirection) {
+                case "asc" -> cursorDate = departmentRepository.findEarliestEstablishedDate();
+                case "desc" -> cursorDate = departmentRepository.findLatestEstablishedDate();
+                default -> cursorDate = departmentRepository.findEarliestEstablishedDate();
+            }
+        }
+
+        return cursorDate;
     }
 }
