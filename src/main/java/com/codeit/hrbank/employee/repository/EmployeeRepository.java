@@ -16,12 +16,25 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
 
     Long countByDepartmentId(Long departmentId);
 
-    @Query("SELECT COUNT(e.id) FROM Employee e WHERE e.status = :status AND e.hireDate BETWEEN :fromDate AND :toDate")
+    @Query("SELECT COUNT(e.id) " +
+            "FROM Employee e " +
+            "WHERE e.status = :status AND e.hireDate BETWEEN :fromDate AND :toDate")
     long countByStatusAndHireDateBetween(EmployeeStatus status, LocalDate fromDate, LocalDate toDate);
 
-    @Query("SELECT e.position as groupKey, COUNT(e.id) as count FROM Employee e WHERE e.status = :status GROUP BY e.position")
+    @Query("SELECT e.position as groupKey, COUNT(e.id) as count " +
+            "FROM Employee e " +
+            "WHERE e.status = :status " +
+            "GROUP BY e.position")
     List<EmployeeDistributionProjection> countByPositionAndStatusEquals(@Param("status") EmployeeStatus status);
 
-    @Query("SELECT e.department as groupKey, COUNT(e.id) as count FROM Employee e WHERE e.status = :status GROUP BY e.department")
+    @Query("SELECT e.department.name as groupKey, COUNT(e.id) as count " +
+            "FROM Employee e " +
+            "WHERE e.status = :status " +
+            "GROUP BY e.department")
     List<EmployeeDistributionProjection> countByDepartmentAndStatusEquals(@Param("status") EmployeeStatus status);
+
+    @Query("SELECT COUNT(e.id)" +
+            " FROM Employee e " +
+            "WHERE e.hireDate BETWEEN :from AND :to AND e.status IN ('ACTIVE', 'ON_LEAVE')")
+    long countByDate(@Param("from")LocalDate from, @Param("to") LocalDate to);
 }

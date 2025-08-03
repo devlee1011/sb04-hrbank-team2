@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface EmployeeService {
     Employee getEmployee(Long id);
@@ -25,4 +26,6 @@ public interface EmployeeService {
     long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate);
 
     List<EmployeeDistributionProjection> getDistribution(String groupBy, EmployeeStatus status);
+
+    Map<LocalDate, Long> getTrend(LocalDate from, LocalDate to, String unit);
 }

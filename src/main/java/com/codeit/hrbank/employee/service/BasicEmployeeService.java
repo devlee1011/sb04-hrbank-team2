@@ -16,7 +16,6 @@ import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import com.codeit.hrbank.stored_file.repository.StoredFileRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -25,9 +24,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -39,13 +43,14 @@ public class BasicEmployeeService implements EmployeeService {
     private final StoredFileRepository storedFileRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Employee> getAll(EmployeeGetAllRequest employeeGetAllRequest) {
         String sortField = employeeGetAllRequest.sortField() == null ? "name" : employeeGetAllRequest.sortField();
         String sortDirection = employeeGetAllRequest.sortDirection() == null ? "asc" : employeeGetAllRequest.sortDirection();
         Specification<Employee> spec = Specification.unrestricted();
         if ("asc".equalsIgnoreCase(sortDirection)) {
             if ("name".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.greaterThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
+                spec = spec.and(EmployeeSpecification.greaterThanName(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
             } else if ("employeeNumber".equals(sortField)) {
@@ -53,23 +58,22 @@ public class BasicEmployeeService implements EmployeeService {
             }
         } else {
             if ("name".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.lessThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
+                spec = spec.and(EmployeeSpecification.lessThanName(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
             } else if ("employeeNumber".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             }
         }
-        if (employeeGetAllRequest.nameOrEmail() != null && employeeGetAllRequest.nameOrEmail().contains("@")){
+        if (employeeGetAllRequest.nameOrEmail() != null && employeeGetAllRequest.nameOrEmail().contains("@")) {
             spec = spec.and(EmployeeSpecification.likeEmail(employeeGetAllRequest.nameOrEmail()));
-        }
-        else {
+        } else {
             spec = spec.and(EmployeeSpecification.likeName(employeeGetAllRequest.nameOrEmail()));
         }
         spec = spec.and(EmployeeSpecification.likeDepartmentName(employeeGetAllRequest.departmentName()));
         spec = spec.and(EmployeeSpecification.likePosition(employeeGetAllRequest.position()));
         spec = spec.and(EmployeeSpecification.likeEmployeeNumber(employeeGetAllRequest.employeeNumber()));
-        spec = spec.and(EmployeeSpecification.betweenHireDate(employeeGetAllRequest.hireDateFrom(),employeeGetAllRequest.hireDateTo()));
+        spec = spec.and(EmployeeSpecification.betweenHireDate(employeeGetAllRequest.hireDateFrom(), employeeGetAllRequest.hireDateTo()));
         spec = spec.and(EmployeeSpecification.equalStatus(employeeGetAllRequest.status()));
 
         Pageable pageable = null;
@@ -80,11 +84,12 @@ public class BasicEmployeeService implements EmployeeService {
             pageable = PageRequest.ofSize(pageSize).withSort(Sort.by(sortField).descending());
         }
 
-        Page<Employee> findList = employeeRepository.findAll(spec,pageable);
+        Page<Employee> findList = employeeRepository.findAll(spec, pageable);
 
         return findList;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Employee getEmployee(Long id) {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
@@ -115,17 +120,17 @@ public class BasicEmployeeService implements EmployeeService {
                         savedEmployee.getId())
         );
         employeeRepository.save(savedEmployee);
-        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.CREATE,employeeCreateRequest.memo()));
+        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.CREATE, employeeCreateRequest.memo()));
         return savedEmployee;
     }
 
     @Transactional
     @Override
     public Employee update(Long id, EmployeeUpdateRequest employeeUpdateRequest, Long newProfileId) {
-        if (employeeUpdateRequest.email() != null){
+        if (employeeUpdateRequest.email() != null) {
             isDuplicateEmail(employeeUpdateRequest.email());
         }
-        if (employeeUpdateRequest.departmentId() != null){
+        if (employeeUpdateRequest.departmentId() != null) {
             validateDepartment(employeeUpdateRequest.departmentId());
         }
 
@@ -158,12 +163,10 @@ public class BasicEmployeeService implements EmployeeService {
 
         Employee employee = employeeRepository.save(findEmployee);
         String department = Optional.ofNullable(employeeUpdateRequest.departmentId())
-                .flatMap(departmentId -> {
-                    return departmentRepository.findById(departmentId);
-                })
+                .flatMap(departmentRepository::findById)
                 .map(Department::getName)
                 .orElse(null);
-        eventPublisher.publishEvent(new EmployeeLogEvent(employeeUpdateRequest,department));
+        eventPublisher.publishEvent(new EmployeeLogEvent(employeeUpdateRequest, department));
         return employee;
     }
 
@@ -173,37 +176,100 @@ public class BasicEmployeeService implements EmployeeService {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
         employeeRepository.deleteById(id);
 
-        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.DELETE,"직원삭제"));
+        eventPublisher.publishEvent(new EmployeeLogEvent(employee, ChangeLogType.DELETE, "직원삭제"));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate) {
         if (fromDate == null) fromDate = LocalDate.of(1900, 1, 1);
         if (toDate == null) toDate = LocalDate.now();
-        return employeeRepository.countByStatusAndHireDateBetween(status,fromDate,toDate);
+        return employeeRepository.countByStatusAndHireDateBetween(status, fromDate, toDate);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<EmployeeDistributionProjection> getDistribution(String groupBy, EmployeeStatus status) {
-//        long employeeCount = getCount(status, null, null);
-//        List<EmployeeDistributionProjection> employeeDistributionProjections = new ArrayList<>();
-
-        return switch(groupBy) {
+        return switch (groupBy) {
             case "department" -> employeeRepository.countByDepartmentAndStatusEquals(status);
             case "position" -> employeeRepository.countByPositionAndStatusEquals(status);
             default -> employeeRepository.countByDepartmentAndStatusEquals(status);
         };
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Map<LocalDate, Long> getTrend(LocalDate from, LocalDate to, String unit) {
+        if (!StringUtils.hasText(unit)) unit = "month";
+        if (to == null) to = LocalDate.now();
+
+        Map<LocalDate, Long> result = new LinkedHashMap<>();
+        switch (unit) {
+            case "month" -> {
+                if (from == null) from = to.minusMonths(12).withDayOfMonth(1);
+                else from = from.withDayOfMonth(1); // 정직하게 해당 월의 시작으로 맞춤
+                to = to.withDayOfMonth(1); // to도 월 단위 비교를 위해 시작일로 맞춤
+
+                long monthsBetween = ChronoUnit.MONTHS.between(from, to);
+                for (int i = 0; i <= monthsBetween; i++) {
+                    LocalDate monthEnd = from.plusMonths(i);
+                    monthEnd = monthEnd.withDayOfMonth(monthEnd.lengthOfMonth());
+
+                    long count = employeeRepository.countByDate(from, monthEnd);
+                    result.put(monthEnd, count);
+                }
+            }
+            case "day" -> {
+                if (from == null) from = to.minusDays(12);
+                long daysBetween = ChronoUnit.DAYS.between(from, to);
+                for (int i = 0; i <= daysBetween; i++) {
+                    LocalDate dayEnd = from.plusDays(i);
+                    long count = employeeRepository.countByDate(from, dayEnd);
+                    result.put(dayEnd, count);
+                }
+            }
+            case "week" -> {
+                if (from == null) from = to.minusWeeks(12);
+                long weeksBetween = ChronoUnit.WEEKS.between(from, to);
+                for (int i = 0; i <= weeksBetween; i++) {
+                    LocalDate weekEnd = from.plusWeeks(i);
+                    long count = employeeRepository.countByDate(from, weekEnd);
+                    result.put(weekEnd, count);
+                }
+            }
+            case "year" -> {
+                if (from == null) from = to.minusYears(12);
+                long yearsBetween = ChronoUnit.YEARS.between(from, to);
+                for (int i = 0; i <= yearsBetween; i++) {
+                    LocalDate yearEnd = from.plusYears(i);
+                    long count = employeeRepository.countByDate(from, yearEnd);
+                    result.put(yearEnd, count);
+                }
+            }
+            case "quarter" -> {
+                if (from == null) from = to.minusMonths(12*3);
+                long quartersBetween = ChronoUnit.MONTHS.between(from, to);
+                for (int i = 0; i <= quartersBetween; i = i + 3) {
+                    LocalDate quarterEnd = from.plusMonths(i);
+                    long count = employeeRepository.countByDate(from, quarterEnd);
+                    result.put(quarterEnd, count);
+                }
+            }
+        }
+        return result;
+    }
+
     private void isDuplicateEmail(String email) {
-        if(employeeRepository.existsByEmail(email)) throw new BusinessLogicException(ExceptionCode.EMAIL_ALREADY_EXISTS);
+        if (employeeRepository.existsByEmail(email))
+            throw new BusinessLogicException(ExceptionCode.EMAIL_ALREADY_EXISTS);
     }
 
     private void validateDepartment(Long departmentId) {
-        if(!departmentRepository.existsById(departmentId)) throw new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND);
+        if (!departmentRepository.existsById(departmentId))
+            throw new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND);
     }
 
     private void validateEmployee(Long id) {
-        if(!employeeRepository.existsById(id)) throw new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND);
+        if (!employeeRepository.existsById(id)) throw new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND);
     }
 }
