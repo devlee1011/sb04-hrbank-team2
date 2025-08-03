@@ -12,11 +12,10 @@ import com.codeit.hrbank.change_log.service.ChangeLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,5 +50,17 @@ public class ChangeLogController {
         DiffDto response = changeLogMapper.toDto(changeLogDetail);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity count(@RequestParam Instant fromDate, @RequestParam Instant toDate) {
+        if(fromDate == null) {
+            fromDate = Instant.now().minus(7, ChronoUnit.DAYS);
+        }
+        if(toDate == null) {
+            toDate = Instant.now();
+        }
+        Long count = changeLogService.getCount(fromDate,toDate);
+        return ResponseEntity.ok(count);
     }
 }

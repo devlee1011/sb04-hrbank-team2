@@ -19,6 +19,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 import java.time.LocalDate;
 
 import java.util.ArrayList;
@@ -88,5 +90,10 @@ public class BasicChangeLogService implements ChangeLogService {
             }
         }
         return details;
+    }
+
+    @Override
+    public Long getCount(Instant fromDate, Instant toDate) {
+        return changeLogRepository.countByCreatedAtBetween(fromDate,toDate);
     }
 }
