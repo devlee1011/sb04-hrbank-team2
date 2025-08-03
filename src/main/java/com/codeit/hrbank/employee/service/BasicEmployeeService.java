@@ -203,11 +203,16 @@ public class BasicEmployeeService implements EmployeeService {
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
 
-        if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.split(",")[0];
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
         }
 
-        return request.getRemoteAddr();
+        // IPv6 로컬 loopback → IPv4로 변환
+        if ("0:0:0:0:0:0:0:1".equals(ip) || "::1".equals(ip)) {
+            ip = "127.0.0.1";
+        }
+
+        return ip;
     }
 
     private List<DiffDto> createLogForCreate(Employee employee) {
