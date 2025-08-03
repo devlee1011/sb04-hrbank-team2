@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
@@ -26,6 +27,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,25 +39,26 @@ public class BasicChangeLogService implements ChangeLogService {
     @Override
     public Page<ChangeLog> getAll(ChangeLogGetAllRequest changeLogGetAllRequest) {
         String sortField = changeLogGetAllRequest.sortField() == null ? "at" : changeLogGetAllRequest.sortField();
+        if (sortField.equals("at")) sortField = "createdAt";
         String sortDirection = changeLogGetAllRequest.sortDirection() == null ? "desc" : changeLogGetAllRequest.sortDirection();
         Specification<ChangeLog> spec = Specification.unrestricted();
         if ("asc".equalsIgnoreCase(sortDirection)) {
             if ("ipAddress".equals(sortField)) {
                 spec = spec.and(ChangeLogSpecification.greaterThanIpAddress(changeLogGetAllRequest.idAfter(),changeLogGetAllRequest.cursor()));
-            } else if ("at".equals(sortField)) {
-                spec = spec.and(ChangeLogSpecification.greaterThanAt(changeLogGetAllRequest.idAfter(), LocalDate.parse(changeLogGetAllRequest.cursor())));
+            } else if ("createdAt".equals(sortField)) {
+                spec = spec.and(ChangeLogSpecification.greaterThanAt(changeLogGetAllRequest.idAfter(), Instant.parse(Optional.ofNullable(changeLogGetAllRequest.cursor()).orElse(String.valueOf(Instant.now())))));
             }
         } else {
             if ("ipAddress".equals(sortField)) {
                 spec = spec.and(ChangeLogSpecification.lessThanIpAddress(changeLogGetAllRequest.idAfter(),changeLogGetAllRequest.cursor()));
-            } else if ("at".equals(sortField)) {
-                spec = spec.and(ChangeLogSpecification.lessThanAt(changeLogGetAllRequest.idAfter(), LocalDate.parse(changeLogGetAllRequest.cursor())));
+            } else if ("createdAt".equals(sortField)) {
+                spec = spec.and(ChangeLogSpecification.lessThanAt(changeLogGetAllRequest.idAfter(), Instant.parse(Optional.ofNullable(changeLogGetAllRequest.cursor()).orElse(String.valueOf(Instant.now())))));
             }
         }
         spec = spec.and(ChangeLogSpecification.likeEmployeeNumber(changeLogGetAllRequest.employeeNumber()));
         spec = spec.and(ChangeLogSpecification.likeMemo(changeLogGetAllRequest.memo()));
         spec = spec.and(ChangeLogSpecification.likeIpAddress(changeLogGetAllRequest.ipAddress()));
-        spec = spec.and(ChangeLogSpecification.betweenHireDate(changeLogGetAllRequest.atFrom(),changeLogGetAllRequest.atTo()));
+        spec = spec.and(ChangeLogSpecification.betweenAt(changeLogGetAllRequest.atFrom(),changeLogGetAllRequest.atTo()));
         spec = spec.and(ChangeLogSpecification.equalType(changeLogGetAllRequest.type()));
 
         Pageable pageable = null;
@@ -72,13 +75,20 @@ public class BasicChangeLogService implements ChangeLogService {
     }
 
     @Override
-    public ChangeLogDetail getChangeLogDetail(Long id) {
-        return changeLogDetailRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.LOG_NOT_FOUND));
+    public List<ChangeLogDetail> getChangeLogDetail(Long id) {
+        List<ChangeLogDetail> detailLogs = changeLogDetailRepository.findAllByChangeLogId(id);
+        if (detailLogs.isEmpty()) throw new BusinessLogicException(ExceptionCode.LOG_NOT_FOUND);
+        return detailLogs;
     }
 
+    @Transactional
+    @Override
     public void create(EmployeeLogEvent event) {
-        ChangeLog changeLog = changeLogRepository.save(new ChangeLog(event.getLogStatus(),event.getEmployeeNumber(), event.getMemo(), event.getIpAddress()));
-        List<ChangeLogDetail> details = createDetailLogs(event,changeLog);
+        ChangeLog changeLog = new ChangeLog(event.getLogStatus(),event.getEmployeeNumber(), event.getMemo(), event.getIpAddress());
+        ChangeLog savedChangeLog = changeLogRepository.save(changeLog);
+        changeLogRepository.flush();
+        System.out.println(savedChangeLog.getId());
+        List<ChangeLogDetail> details = createDetailLogs(event,savedChangeLog);
         changeLogDetailRepository.saveAll(details);
     }
 

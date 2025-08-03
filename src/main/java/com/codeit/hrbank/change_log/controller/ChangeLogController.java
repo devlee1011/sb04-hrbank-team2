@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,15 +47,17 @@ public class ChangeLogController {
     }
 
     @GetMapping("/{id}/diffs")
-    public ResponseEntity get(@PathVariable Long id) {
-        ChangeLogDetail changeLogDetail = changeLogService.getChangeLogDetail(id);
-        DiffDto response = changeLogMapper.toDto(changeLogDetail);
+    public ResponseEntity getDiff(@PathVariable Long id) {
+        List<ChangeLogDetail> changeLogDetail = changeLogService.getChangeLogDetail(id);
+        List<DiffDto> response = changeLogDetail.stream()
+                .map(changeLogMapper::toDto)
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/count")
-    public ResponseEntity count(@RequestParam Instant fromDate, @RequestParam Instant toDate) {
+    public ResponseEntity count(@RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate) {
         if(fromDate == null) {
             fromDate = Instant.now().minus(7, ChronoUnit.DAYS);
         }

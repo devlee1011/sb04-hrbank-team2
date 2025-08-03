@@ -38,17 +38,17 @@ public class ChangeLogSpecification {
             @Override
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (ipAddress == null) return null;
-                return criteriaBuilder.like(root.get("ipAddress").get("name"), "%" + ipAddress + "%");
+                return criteriaBuilder.like(root.get("ipAddress"), "%" + ipAddress + "%");
             }
         };
     }
 
-    public static Specification<ChangeLog> betweenHireDate(Instant startDate, Instant endDate){
+    public static Specification<ChangeLog> betweenAt(Instant startDate, Instant endDate){
         return new Specification<ChangeLog>() {
             @Override
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (startDate == null || endDate == null) return null;
-                return criteriaBuilder.between(root.get("hireDate"), startDate, endDate);
+                return criteriaBuilder.between(root.get("createdAt"), startDate, endDate);
             }
         };
     }
@@ -77,7 +77,7 @@ public class ChangeLogSpecification {
         };
     }
 
-    public static Specification<ChangeLog> greaterThanAt(Long idAfter, LocalDate cursor) {
+    public static Specification<ChangeLog> greaterThanAt(Long idAfter, Instant cursor) {
         return new Specification<ChangeLog>() {
             @Override
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
@@ -105,7 +105,7 @@ public class ChangeLogSpecification {
         };
     }
 
-    public static Specification<ChangeLog> lessThanAt(Long idAfter, LocalDate cursor) {
+    public static Specification<ChangeLog> lessThanAt(Long idAfter, Instant cursor) {
         return new Specification<ChangeLog>() {
             @Override
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {

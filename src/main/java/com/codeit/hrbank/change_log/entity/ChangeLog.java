@@ -29,8 +29,8 @@ public class ChangeLog extends BaseEntity {
     @Column(nullable = false, length = 45)
     private String ipAddress;
 
-    @OneToMany(mappedBy = "changeLog", cascade = {CascadeType.ALL}, orphanRemoval = true)
-    private List<ChangeLog> changeLogs = new ArrayList<>();
+//    @OneToMany(mappedBy = "changeLog", cascade = {CascadeType.ALL}, orphanRemoval = true)
+//    private List<ChangeLogDetail> changeLogDetails = new ArrayList<>();
 
     public ChangeLog(ChangeLogType type, String employeeNumber, String memo, String ipAddress) {
         this.type = type;

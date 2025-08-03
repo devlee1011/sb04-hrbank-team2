@@ -5,9 +5,14 @@ import com.codeit.hrbank.change_log.dto.DiffDto;
 import com.codeit.hrbank.change_log.entity.ChangeLog;
 import com.codeit.hrbank.change_log.entity.ChangeLogDetail;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface ChangeLogMapper {
     ChangeLogDto toDto(ChangeLog changeLog);
+
+    @Mapping(target = "propertyName", source = "fieldName")
+    @Mapping(target = "before", source = "oldValue")
+    @Mapping(target = "after", source = "newValue")
     DiffDto toDto(ChangeLogDetail changeLogDetail);
 }

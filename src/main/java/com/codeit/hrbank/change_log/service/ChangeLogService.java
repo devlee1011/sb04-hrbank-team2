@@ -8,10 +8,11 @@ import com.codeit.hrbank.change_log.entity.ChangeLog;
 import org.springframework.data.domain.Page;
 
 import java.time.Instant;
+import java.util.List;
 
 public interface ChangeLogService {
     Page<ChangeLog> getAll(ChangeLogGetAllRequest changeLogGetAllRequest);
     void create(EmployeeLogEvent event);
-    ChangeLogDetail getChangeLogDetail(Long id);
+    List<ChangeLogDetail> getChangeLogDetail(Long id);
     Long getCount(Instant fromDate, Instant toDate);
 }
