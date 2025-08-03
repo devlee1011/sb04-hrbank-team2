@@ -1,6 +1,5 @@
 package com.codeit.hrbank.change_log.controller;
 
-import com.codeit.hrbank.base.dto.PageResponse;
 import com.codeit.hrbank.change_log.dto.ChangeLogDto;
 import com.codeit.hrbank.change_log.dto.request.ChangeLogGetAllRequest;
 import com.codeit.hrbank.change_log.dto.response.CursorPageResponseChangeLogDto;
@@ -30,7 +29,7 @@ public class ChangeLogController {
     public ResponseEntity getAll(@ModelAttribute ChangeLogGetAllRequest changeLogGetAllRequest) {
         Page<ChangeLog> changeLogs = changeLogService.getAll(changeLogGetAllRequest);
         if(!changeLogs.hasContent()) {
-            return ResponseEntity.ok(PageResponse.from(Page.empty(),null,null));
+            return ResponseEntity.ok(CursorPageResponseChangeLogDto.from(Page.empty(),null,null));
         }
         Long idAfter = changeLogs.getContent().get(changeLogs.getContent().size() - 1).getId();
         String cursor = null;
