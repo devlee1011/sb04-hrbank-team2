@@ -63,12 +63,12 @@ create table backups
         constraint backups_status_check
             check ((status)::text = ANY
                    ((ARRAY ['IN_PROGRESS'::character varying, 'COMPLETED'::character varying, 'SKIPPED'::character varying, 'FAILED'::character varying])::text[])),
-    started_at timestamp with time zone                           not null,
-    ended_at   timestamp with time zone                           not null,
+    started_at timestamp with time zone,
+    ended_at   timestamp with time zone,
     created_at timestamp with time zone default CURRENT_TIMESTAMP not null,
     file_id    bigint
         references files
-            on delete cascade
+            on delete set null
 );
 
 alter table backups

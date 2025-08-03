@@ -2,7 +2,6 @@ package com.codeit.hrbank.backup.entitiy;
 
 import com.codeit.hrbank.base_entity.BaseEntity;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,6 +19,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Entity
 @Table(name = "backups")
 public class Backup extends BaseEntity {
@@ -30,13 +33,13 @@ public class Backup extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private BackupStatus status;
 
-  @Column(nullable = false)
+  @Column
   private Instant startedAt;
 
-  @Column(nullable = false)
+  @Column
   private Instant endedAt;
 
-  @OneToOne(cascade = CascadeType.REMOVE)
+  @OneToOne
   @JoinColumn(name = "file_id")
   private StoredFile storedFile;
 }
