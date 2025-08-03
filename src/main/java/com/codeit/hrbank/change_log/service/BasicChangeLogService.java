@@ -22,8 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
-import java.time.LocalDate;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +34,7 @@ public class BasicChangeLogService implements ChangeLogService {
     private final ChangeLogDetailRepository changeLogDetailRepository;
     private final EmployeeRepository employeeRepository;
 
+    @Transactional(readOnly = true)
     @Override
     public Page<ChangeLog> getAll(ChangeLogGetAllRequest changeLogGetAllRequest) {
         String sortField = changeLogGetAllRequest.sortField() == null ? "at" : changeLogGetAllRequest.sortField();
@@ -46,7 +45,7 @@ public class BasicChangeLogService implements ChangeLogService {
             if ("ipAddress".equals(sortField)) {
                 spec = spec.and(ChangeLogSpecification.greaterThanIpAddress(changeLogGetAllRequest.idAfter(),changeLogGetAllRequest.cursor()));
             } else if ("createdAt".equals(sortField)) {
-                spec = spec.and(ChangeLogSpecification.greaterThanAt(changeLogGetAllRequest.idAfter(), Instant.parse(Optional.ofNullable(changeLogGetAllRequest.cursor()).orElse(String.valueOf(Instant.now())))));
+                spec = spec.and(ChangeLogSpecification.greaterThanAt(changeLogGetAllRequest.idAfter(), Instant.parse(Optional.ofNullable(changeLogGetAllRequest.cursor()).orElse(String.valueOf(Instant.MIN)))));
             }
         } else {
             if ("ipAddress".equals(sortField)) {
@@ -74,6 +73,7 @@ public class BasicChangeLogService implements ChangeLogService {
         return findList;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ChangeLogDetail> getChangeLogDetail(Long id) {
         List<ChangeLogDetail> detailLogs = changeLogDetailRepository.findAllByChangeLogId(id);
@@ -87,7 +87,6 @@ public class BasicChangeLogService implements ChangeLogService {
         ChangeLog changeLog = new ChangeLog(event.getLogStatus(),event.getEmployeeNumber(), event.getMemo(), event.getIpAddress());
         ChangeLog savedChangeLog = changeLogRepository.save(changeLog);
         changeLogRepository.flush();
-        System.out.println(savedChangeLog.getId());
         List<ChangeLogDetail> details = createDetailLogs(event,savedChangeLog);
         changeLogDetailRepository.saveAll(details);
     }
@@ -102,6 +101,7 @@ public class BasicChangeLogService implements ChangeLogService {
         return details;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Long getCount(Instant fromDate, Instant toDate) {
         return changeLogRepository.countByCreatedAtBetween(fromDate,toDate);

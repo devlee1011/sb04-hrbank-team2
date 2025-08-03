@@ -21,9 +21,9 @@ public class ChangeLogDetail extends BaseEntity {
     @Column(nullable = false, length = 100)
     String fieldName;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     String oldValue;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     String newValue;
 }

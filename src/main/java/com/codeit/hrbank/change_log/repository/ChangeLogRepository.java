@@ -5,10 +5,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.time.Instant;
 
-public interface ChangeLogRepository extends JpaRepository<ChangeLog, Long> {
-    Page<ChangeLog> findAll(Specification<ChangeLog> spec, Pageable pageable);
+public interface ChangeLogRepository extends JpaRepository<ChangeLog, Long> , JpaSpecificationExecutor<ChangeLog> {
     Long countByCreatedAtBetween(Instant fromDate, Instant toDate);
 }

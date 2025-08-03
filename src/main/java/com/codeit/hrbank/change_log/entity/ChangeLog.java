@@ -23,7 +23,7 @@ public class ChangeLog extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String employeeNumber;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String memo;
 
     @Column(nullable = false, length = 45)

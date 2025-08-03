@@ -18,7 +18,9 @@ public class ChangeLogSpecification {
             @Override
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (employeeNumber == null) return null;
-                return criteriaBuilder.like(root.get("employeeNumber"), "%" + employeeNumber + "%");
+                return criteriaBuilder.like(
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("memo"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                        "%" + employeeNumber.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
     }
@@ -28,7 +30,9 @@ public class ChangeLogSpecification {
             @Override
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (memo == null) return null;
-                return criteriaBuilder.like(root.get("memo"), "%" + memo + "%");
+                return criteriaBuilder.like(
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("memo"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                        "%" + memo.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
     }
@@ -38,7 +42,9 @@ public class ChangeLogSpecification {
             @Override
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (ipAddress == null) return null;
-                return criteriaBuilder.like(root.get("ipAddress"), "%" + ipAddress + "%");
+                return criteriaBuilder.like(
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("memo"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                        "%" + ipAddress.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
     }
