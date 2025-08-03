@@ -16,6 +16,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -32,8 +34,8 @@ public class BasicDepartmentService implements DepartmentService {
     @Override
     public Page<Department> getAllDepartments(DepartmentGetAllRequest departmentGetAllRequest) {
         // 검색 필드, 정렬 방향 초기화
-        String sortField = departmentGetAllRequest.sortField() == null || departmentGetAllRequest.sortField().isEmpty() ? "name" : departmentGetAllRequest.sortField();
-        String sortDirection = departmentGetAllRequest.sortDirection() == null ? "asc" : departmentGetAllRequest.sortDirection();
+        String sortField = !StringUtils.hasText(departmentGetAllRequest.sortField()) ? "name" : departmentGetAllRequest.sortField();
+        String sortDirection = !StringUtils.hasText(departmentGetAllRequest.sortDirection()) ? "asc" : departmentGetAllRequest.sortDirection();
 
         Specification<Department> spec = Specification.unrestricted();
 
@@ -68,9 +70,9 @@ public class BasicDepartmentService implements DepartmentService {
             }
         }
 
-        // 검색 조건
-        spec = spec.and(DepartmentSpecification.likeName(departmentGetAllRequest.nameOrDescription()));
-        spec = spec.and(DepartmentSpecification.likeDescription(departmentGetAllRequest.nameOrDescription()));
+        // 정렬 조건 설정
+        spec = spec.or(DepartmentSpecification.likeName(departmentGetAllRequest.nameOrDescription()));
+        spec = spec.or(DepartmentSpecification.likeDescription(departmentGetAllRequest.nameOrDescription()));
 
         // Pageable
         Pageable pageable = null;
@@ -90,11 +92,11 @@ public class BasicDepartmentService implements DepartmentService {
         String description = department.getDescription();
 
         // 이름, 설명 null 불가
-        if (name == null || name.trim().isEmpty()) {
+        if (!StringUtils.hasText(name)) {
             throw new BusinessLogicException(ExceptionCode.NAME_CANNOT_BE_NULL);
         }
 
-        if (description == null || description.trim().isEmpty()) {
+        if (!StringUtils.hasText(description)) {
             throw new BusinessLogicException(ExceptionCode.DESCRIPTION_CANNOT_BE_NULL);
         }
 
@@ -115,11 +117,11 @@ public class BasicDepartmentService implements DepartmentService {
         // departmentUpdateRequest에 수정할 항목이 비어있으면 기존 값 유지
 
         String newName = Optional.ofNullable(departmentUpdateRequest.name())
-                .filter(name -> !name.isBlank())
+                .filter(StringUtils::hasText)
                 .orElse(department.getName());
 
         String newDescription = Optional.ofNullable(departmentUpdateRequest.description())
-                .filter(description -> !description.isBlank())
+                .filter(StringUtils::hasText)
                 .orElse(department.getDescription());
 
         LocalDate newEstablishedDate = Optional.ofNullable(departmentUpdateRequest.establishedDate())
