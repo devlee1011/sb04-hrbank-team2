@@ -9,6 +9,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface BackupRepository extends JpaRepository<Backup, Long>,
     JpaSpecificationExecutor<Backup> {
   Optional<Backup> findFirstByOrderByStartedAtDesc();
-  Optional<Backup> findFirstByStatusOrderByStartedAtDesc(BackupStatus status);
   Optional<Backup> findFirstByStatusOrderByIdDesc(BackupStatus status);
 }
