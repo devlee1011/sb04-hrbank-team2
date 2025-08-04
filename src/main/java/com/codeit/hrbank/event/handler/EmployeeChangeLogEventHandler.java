@@ -12,7 +12,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class EmployeeChangeLogEventHandler {
     private final ChangeLogService changeLogService;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(EmployeeLogEvent event){
         // changeLogService.create(event);
     }
