@@ -30,4 +30,6 @@ public interface EmployeeService {
     List<EmployeeDistributionProjection> getDistribution(String groupBy, EmployeeStatus status);
 
     List<EmployeeTrendProjection> getTrend(LocalDate from, LocalDate to, UnitType unit);
+
+    long getEmployeeCountInCurrentMonth();
 }

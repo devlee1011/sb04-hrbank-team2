@@ -42,9 +42,17 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
                AND e.status IN :statuses
             """)
     long countByHireDateBetween(@Param("from") LocalDate from,
-                                      @Param("to") LocalDate to,
-                                      @Param("statuses") Collection<EmployeeStatus> statuses);
+                                @Param("to") LocalDate to,
+                                @Param("statuses") Collection<EmployeeStatus> statuses);
 
     List<Employee> findAllByCreatedAtAfter(Instant lastBackupStart);
 
+
+    @Query("""
+                SELECT COUNT(e.id)
+                FROM Employee e
+                WHERE e.hireDate BETWEEN :from AND :to
+            """)
+    long countByHireDateInCurrentMonth(@Param("from") LocalDate from,
+                                       @Param("to") LocalDate to);
 }

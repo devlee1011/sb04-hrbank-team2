@@ -237,6 +237,15 @@ public class BasicEmployeeService implements EmployeeService {
         return getEmployeeTrendProjections(targetPeriod.getFromStart(), targetPeriod.getToEnd(), statuses, unit);
     }
 
+
+    @Transactional(readOnly = true)
+    @Override
+    public long getEmployeeCountInCurrentMonth() {
+        LocalDate from = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate to = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth());
+        return employeeRepository.countByHireDateInCurrentMonth(from, to);
+    }
+
     // 응답 dto 생성용 단위 별 날짜 생성기
     private List<EmployeeTrendProjection> getEmployeeTrendProjections(LocalDate from, LocalDate to, Collection<EmployeeStatus> statuses, UnitType unit) {
         List<EmployeeTrendProjection> result = new ArrayList<>();
