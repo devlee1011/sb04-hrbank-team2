@@ -55,7 +55,7 @@ public class EmployeeController {
 
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "userCreateRequest", contentType = MediaType.APPLICATION_JSON_VALUE)))
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity create(@RequestPart("employeeCreateRequest") EmployeeCreateRequest employeeCreateRequest,
+    public ResponseEntity create(@RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
                                  @RequestPart(value = "profile", required = false) MultipartFile profile,
                                  HttpServletRequest httpServletRequest) {
         Long profileId = Optional.ofNullable(profile)
@@ -71,7 +71,7 @@ public class EmployeeController {
 
     @PatchMapping("/{id}")
     public ResponseEntity update(@PathVariable("id") Long id,
-                                 @RequestPart("employeeUpdateRequest") EmployeeUpdateRequest employeeUpdateRequest,
+                                 @RequestPart("employee") EmployeeUpdateRequest employeeUpdateRequest,
                                  @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile,
                                  HttpServletRequest httpServletRequest) {
         Long storedFileId = Optional.ofNullable(profile)

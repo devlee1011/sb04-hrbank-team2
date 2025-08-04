@@ -81,7 +81,7 @@ create table change_logs
     type            varchar(20)                                        not null
         constraint change_logs_type_check
             check ((type)::text = ANY
-                   ((ARRAY ['CREATE'::character varying, 'UPDATE'::character varying, 'DELETE'::character varying])::text[])),
+                   ((ARRAY ['CREATED'::character varying, 'UPDATED'::character varying, 'DELETED'::character varying])::text[])),
     employee_number varchar(50)                                        not null,
     memo            text,
     ip_address      varchar(45)                                        not null,

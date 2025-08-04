@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ChangeLogMapper {
+    @Mapping(target = "at", source = "createdAt")
     ChangeLogDto toDto(ChangeLog changeLog);
 
     @Mapping(target = "propertyName", source = "fieldName")
