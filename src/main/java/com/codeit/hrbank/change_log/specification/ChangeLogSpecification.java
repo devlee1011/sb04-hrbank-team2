@@ -89,7 +89,7 @@ public class ChangeLogSpecification {
                 if (idAfter == null || cursor == null) return null;
                 Predicate greaterThanAt = criteriaBuilder.greaterThan(root.get("createdAt"), cursor);
                 Predicate sort = criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("createAt"), cursor),
+                        criteriaBuilder.equal(root.get("createdAt"), cursor),
                         criteriaBuilder.greaterThan(root.get("id"), idAfter));
                 return criteriaBuilder.or(greaterThanAt, sort);
             }
@@ -115,9 +115,9 @@ public class ChangeLogSpecification {
             @Override
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (idAfter == null || cursor == null) return null;
-                Predicate lessThanAt = criteriaBuilder.lessThan(root.get("createAt"), cursor);
+                Predicate lessThanAt = criteriaBuilder.lessThan(root.get("createdAt"), cursor);
                 Predicate sort = criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("createAt"), cursor),
+                        criteriaBuilder.equal(root.get("createdAt"), cursor),
                         criteriaBuilder.lessThan(root.get("id"), idAfter));
                 return criteriaBuilder.or(lessThanAt, sort);
             }
