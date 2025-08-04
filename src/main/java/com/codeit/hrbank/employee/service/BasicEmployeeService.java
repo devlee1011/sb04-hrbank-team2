@@ -154,7 +154,7 @@ public class BasicEmployeeService implements EmployeeService {
                 .filter(StringUtils::hasText)
                 .ifPresent(email -> {
                     logs.add(new DiffDto("email",findEmployee.getEmail(),email));
-                    findEmployee.setEmail(email);findEmployee::setEmail
+                    findEmployee.setEmail(email);
                 });
 
         Optional.ofNullable(employeeUpdateRequest.departmentId())

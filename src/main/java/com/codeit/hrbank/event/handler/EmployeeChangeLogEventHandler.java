@@ -14,6 +14,6 @@ public class EmployeeChangeLogEventHandler {
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(EmployeeLogEvent event){
-        // changeLogService.create(event);
+         changeLogService.create(event);
     }
 }
