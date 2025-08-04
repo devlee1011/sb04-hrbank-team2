@@ -1,6 +1,5 @@
 package com.codeit.hrbank.stored_file.controller;
 
-import com.codeit.hrbank.stored_file.controller.api.StoredFileApi;
 import com.codeit.hrbank.stored_file.service.StoredFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,17 +14,15 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/files")
-public class StoredFileController implements StoredFileApi {
+public class StoredFileController {
 
   private final StoredFileService storedFileService;
 
-  @Override
   @PostMapping
   public void createStoredFile(@RequestPart(value = "file") MultipartFile file) {
-     storedFileService.createStoredFile(file);
+    storedFileService.createStoredFile(file);
   }
 
-  @Override
   @GetMapping("/{id}/download")
   public ResponseEntity downloadSoredFile(@PathVariable("id") Long storedFileId) {
     return storedFileService.downloadSoredFile(storedFileId);
