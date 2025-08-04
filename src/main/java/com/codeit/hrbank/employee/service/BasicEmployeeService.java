@@ -16,7 +16,6 @@ import com.codeit.hrbank.exception.ExceptionCode;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import com.codeit.hrbank.stored_file.repository.StoredFileRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -25,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -41,8 +42,8 @@ public class BasicEmployeeService implements EmployeeService {
 
     @Override
     public Page<Employee> getAll(EmployeeGetAllRequest employeeGetAllRequest) {
-        String sortField = employeeGetAllRequest.sortField() == null ? "name" : employeeGetAllRequest.sortField();
-        String sortDirection = employeeGetAllRequest.sortDirection() == null ? "asc" : employeeGetAllRequest.sortDirection();
+        String sortField = StringUtils.hasText(employeeGetAllRequest.sortField()) ? employeeGetAllRequest.sortField() : "name";
+        String sortDirection = StringUtils.hasText(employeeGetAllRequest.sortDirection()) ? employeeGetAllRequest.sortDirection() : "asc";
         Specification<Employee> spec = Specification.unrestricted();
         if ("asc".equalsIgnoreCase(sortDirection)) {
             if ("name".equals(sortField)) {
@@ -103,7 +104,13 @@ public class BasicEmployeeService implements EmployeeService {
         StoredFile profile = Optional.ofNullable(profileId)
                 .flatMap(storedFileRepository::findById)
                 .orElse(null);
-        Department department = departmentRepository.findById(employeeCreateRequest.departmentId()).orElse(null);
+
+        Long departmentId = Optional.ofNullable(employeeCreateRequest.departmentId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_CANNOT_BE_NULL));
+
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
+
         Employee employee = new Employee(
                 employeeCreateRequest.name(), employeeCreateRequest.email(),
                 department, employeeCreateRequest.position(),
@@ -131,14 +138,20 @@ public class BasicEmployeeService implements EmployeeService {
             validateDepartment(employeeUpdateRequest.departmentId());
         }
 
-        Employee findEmployee = employeeRepository.findById(id).orElse(null);
+        Employee findEmployee = employeeRepository.findById(id)
+                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
+
         List<DiffDto> logs = new ArrayList<>();
+
         Optional.ofNullable(employeeUpdateRequest.name())
+                .filter(StringUtils::hasText)
                 .ifPresent(name -> {
                     logs.add(new DiffDto("name",findEmployee.getName(),name));
                     findEmployee.setName(name);
                 });
+
         Optional.ofNullable(employeeUpdateRequest.email())
+                .filter(StringUtils::hasText)
                 .ifPresent(email -> {
                     logs.add(new DiffDto("email",findEmployee.getEmail(),email));
                     findEmployee.setEmail(email);
@@ -146,21 +159,25 @@ public class BasicEmployeeService implements EmployeeService {
 
         Optional.ofNullable(employeeUpdateRequest.departmentId())
                 .ifPresent(departmentId -> {
-                    Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId()).orElse(null);
+                    Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId())
+                                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
                     logs.add(new DiffDto("DepartmentName", findEmployee.getDepartment().getName(),findDepartment.getName()));
                     findEmployee.setDepartment(findDepartment);
                 });
 
         Optional.ofNullable(employeeUpdateRequest.position())
+                .filter(StringUtils::hasText)
                 .ifPresent(position -> {
                     logs.add(new DiffDto("position",findEmployee.getPosition(),position));
                     findEmployee.setPosition(position);
                 });
+
         Optional.ofNullable(employeeUpdateRequest.hireDate())
                 .ifPresent(hireDate -> {
                     logs.add(new DiffDto("hireDate",String.valueOf(findEmployee.getHireDate()),String.valueOf(hireDate)));
                     findEmployee.setHireDate(hireDate);
                 });
+
         Optional.ofNullable(employeeUpdateRequest.status())
                 .ifPresent(status -> {
                     logs.add(new DiffDto("status",String.valueOf(findEmployee.getStatus()),String.valueOf(status)));
@@ -173,6 +190,7 @@ public class BasicEmployeeService implements EmployeeService {
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.STORED_FILE_NOT_FOUND));
             findEmployee.setProfile(profile);
         });
+
         Employee employee = employeeRepository.save(findEmployee);
         eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.UPDATE, employeeUpdateRequest.memo(), getClientIp(httpServletRequest), employee.getEmployeeNumber()));
         return employee;
