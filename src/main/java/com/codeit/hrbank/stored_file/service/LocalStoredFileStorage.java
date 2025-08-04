@@ -81,7 +81,7 @@ public class LocalStoredFileStorage {
             .append(employee.getStatus()).append(",")
             .append(employee.getEmployeeNumber()).append(",")
             .append(employee.getDepartment().getId()).append(",")
-            .append(employee.getProfile().getId()).append(",")
+            .append(employee.getProfile() == null ? null : employee.getProfile().getId()).append(",")
             .append(employee.getCreatedAt()).append(",")
             .append(employee.getUpdatedAt());
 

@@ -1,12 +1,17 @@
 package com.codeit.hrbank.employee.controller;
 
 import com.codeit.hrbank.employee.dto.CursorPageResponseEmployeeDto;
+import com.codeit.hrbank.employee.dto.EmployeeDistributionDto;
 import com.codeit.hrbank.employee.dto.EmployeeDto;
+import com.codeit.hrbank.employee.dto.EmployeeTrendDto;
 import com.codeit.hrbank.employee.dto.request.EmployeeCreateRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
 import com.codeit.hrbank.employee.entity.Employee;
+import com.codeit.hrbank.employee.entity.EmployeeStatus;
+import com.codeit.hrbank.employee.entity.UnitType;
 import com.codeit.hrbank.employee.mapper.EmployeeMapper;
+import com.codeit.hrbank.employee.projection.EmployeeTrendProjection;
 import com.codeit.hrbank.employee.service.EmployeeService;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import com.codeit.hrbank.stored_file.service.StoredFileService;
@@ -21,6 +26,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -55,7 +62,7 @@ public class EmployeeController {
 
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "userCreateRequest", contentType = MediaType.APPLICATION_JSON_VALUE)))
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity create(@RequestPart("employeeCreateRequest") EmployeeCreateRequest employeeCreateRequest,
+    public ResponseEntity create(@RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
                                  @RequestPart(value = "profile", required = false) MultipartFile profile,
                                  HttpServletRequest httpServletRequest) {
         Long profileId = Optional.ofNullable(profile)
@@ -71,7 +78,7 @@ public class EmployeeController {
 
     @PatchMapping("/{id}")
     public ResponseEntity update(@PathVariable("id") Long id,
-                                 @RequestPart("employeeUpdateRequest") EmployeeUpdateRequest employeeUpdateRequest,
+                                 @RequestPart("employee") EmployeeUpdateRequest employeeUpdateRequest,
                                  @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile,
                                  HttpServletRequest httpServletRequest) {
         Long storedFileId = Optional.ofNullable(profile)
@@ -97,5 +104,27 @@ public class EmployeeController {
                                  HttpServletRequest httpServletRequest) {
         employeeService.delete(id,httpServletRequest);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity count(@RequestParam EmployeeStatus status, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate) {
+        long count = employeeService.getCount(status,fromDate,toDate);
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/stats/distribution")
+    public ResponseEntity distribution(@RequestParam(defaultValue = "department") String groupBy, @RequestParam(defaultValue = "ACTIVE") EmployeeStatus status) {
+        long employeeCount = employeeService.getCount(status,null,null);
+        List<EmployeeDistributionDto> response = employeeService.getDistribution(groupBy, status).stream()
+                .map(projection -> employeeMapper.toEmployeeDistributionDto(projection, employeeCount))
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/stats/trend")
+    public ResponseEntity trend(@RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to, @RequestParam(defaultValue = "month") String unit) {
+        List<EmployeeTrendProjection> projections = employeeService.getTrend(from,to, UnitType.parseUnit(unit));
+        List<EmployeeTrendDto> response = employeeMapper.toEmployeeTrendDtos(projections);
+        return ResponseEntity.ok(response);
     }
 }
