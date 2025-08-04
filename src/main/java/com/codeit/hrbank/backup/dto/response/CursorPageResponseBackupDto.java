@@ -11,4 +11,9 @@ public record CursorPageResponseBackupDto(
     Long totalElements,
     boolean hasNext
 ) {
+
+  public static CursorPageResponseBackupDto from(List<BackupDto> content, String nextCursor, Long nextIdAfter,
+      Long totalElements, boolean hasNext) {
+    return new CursorPageResponseBackupDto(content, nextCursor, nextIdAfter, content.size(), totalElements, hasNext);
+  }
 }

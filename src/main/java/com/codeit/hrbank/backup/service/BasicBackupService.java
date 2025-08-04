@@ -9,9 +9,11 @@ import com.codeit.hrbank.employee.repository.EmployeeRepository;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import com.codeit.hrbank.stored_file.repository.StoredFileRepository;
 import com.codeit.hrbank.stored_file.service.LocalStoredFileStorage;
+import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,12 +42,14 @@ public class BasicBackupService implements BackupService {
 
     Backup backup;
 
+    Instant startTime = Instant.now();
+    Instant endTime;
+
     if (!employees.isEmpty()) {
       long totalCount = backupRepository.count();
 
-      Instant startTime = Instant.now();
       StoredFile storedFile = localStoredFileStorage.backup(employees, totalCount+1, new StoredFile());
-      Instant endTime = Instant.now();
+      endTime = Instant.now();
 
       StoredFile savefile = storedFileRepository.save(storedFile);
       backup = Backup.builder()
@@ -56,9 +60,13 @@ public class BasicBackupService implements BackupService {
           .storedFile(savefile)
           .build();
     }else{
+      endTime = Instant.now();
+
       backup = Backup.builder()
           .worker(requestIp)
           .status(BackupStatus.SKIPPED)
+          .startedAt(startTime)
+          .endedAt(endTime)
           .build();
     }
 
@@ -67,21 +75,28 @@ public class BasicBackupService implements BackupService {
 
   @Override
   public Page<Backup> getAllBackups(BackupGetAllRequest request) {
-    Specification<Backup> spec = withFilters(request);
+    Specification<Backup> spec = conditionFilters(request);
 
-    int size = request.size() != null && request.size() > 0 ? request.size() : 20;
+    int size = request.size() != null && request.size() > 0 ? request.size() : 10;
 
-    String sortField = request.sortField() != null ? request.sortField() : "id";
+    String sortField = request.sortField() != null ? request.sortField() : "startedAt";
     Sort.Direction direction =
-        "desc".equalsIgnoreCase(request.sortDirection()) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        "ASC".equalsIgnoreCase(request.sortDirection()) ? Sort.Direction.ASC : Sort.Direction.DESC;
     Pageable pageable = PageRequest.of(0, size + 1, Sort.by(direction, sortField));
 
     return backupRepository.findAll(spec, pageable);
   }
 
-  private Specification<Backup> withFilters(BackupGetAllRequest request) {
+  @Override
+  public Backup getLatestBackup(String statusString) {
+    BackupStatus status = BackupStatus.valueOf(statusString.toUpperCase());
+    return backupRepository.findFirstByStatusOrderByIdDesc(status)
+        .orElseThrow(() -> new NoSuchElementException("해당 상태의 백업 기록이 없습니다."));
+  }
+
+  private Specification<Backup> conditionFilters(BackupGetAllRequest request) {
     return (root, query, cb) -> {
-      var predicates = cb.conjunction();
+      Predicate predicates = cb.conjunction();
 
       if (request.worker() != null && !request.worker().isBlank()) {
         predicates.getExpressions().add(cb.equal(root.get("worker"), request.worker()));

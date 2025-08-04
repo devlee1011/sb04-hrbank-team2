@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -39,47 +40,38 @@ public class BackupController {
     Page<Backup> backups = backupService.getAllBackups(backupGetAllRequest);
 
     List<Backup> backupList = backups.getContent();
-    int requestedSize = backupGetAllRequest.size() != null ? backupGetAllRequest.size() : 20;
+    int requestedSize = backupGetAllRequest.size() != null ? backupGetAllRequest.size() : 10;
 
-    // hasNext 판단을 위해 1개 더 가져온 경우 잘라줌
     boolean hasNext = backupList.size() > requestedSize;
+    String nextCursor = null;
+    Long nextIdAfter = null;
+
     if (hasNext) {
+      Backup last = backupList.get(backupList.size() - 1);
+
+      String sortField = backupGetAllRequest.sortField() != null ? backupGetAllRequest.sortField() : "startedAt";
+      switch (sortField) {
+        case "endedAt"   -> nextCursor = String.valueOf(last.getEndedAt());
+        case "status"    -> nextCursor = last.getStatus().name();
+        default -> nextCursor = String.valueOf(last.getStartedAt());
+      }
+
       backupList = backupList.subList(0, requestedSize);
+      nextIdAfter = backupList.get(backupList.size() - 1).getId();
     }
 
     List<BackupDto> content = backupList.stream()
         .map(backupMapper::toDto)
         .toList();
 
-    String nextCursor = null;
-    Long nextIdAfter = null;
-
-    if (hasNext) {
-      Backup last = backupList.get(backupList.size() - 1);
-      nextIdAfter = last.getId();
-
-      String sortField = backupGetAllRequest.sortField() != null
-          ? backupGetAllRequest.sortField()
-          : "id";
-
-      if ("startedAt".equals(sortField) && last.getStartedAt() != null) {
-        nextCursor = last.getStartedAt().toString();
-      } else if ("id".equals(sortField)) {
-        nextCursor = last.getId().toString();
-      }
-      // 다른 필드 정렬도 여기서 추가 처리 가능
-    }
-
-    return new CursorPageResponseBackupDto(
-        content,
-        nextCursor,
-        nextIdAfter,
-        requestedSize,
-        (long) content.size(),
-        hasNext
-    );
+    return CursorPageResponseBackupDto.from(content,nextCursor,nextIdAfter,backups.getTotalElements(),hasNext);
   }
 
+  @GetMapping("/latest")
+  public BackupDto getLatestBackup(@RequestParam(required = false, defaultValue = "COMPLETED") String status) {
+    Backup backup = backupService.getLatestBackup(status);
+    return backupMapper.toDto(backup);
+  }
 
   private String getClientIp(HttpServletRequest request) {
     String ip = request.getHeader("X-Forwarded-For");

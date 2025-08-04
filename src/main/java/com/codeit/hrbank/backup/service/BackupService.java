@@ -8,4 +8,6 @@ public interface BackupService {
   Backup createBackup(String requestIp);
 
   Page<Backup> getAllBackups(BackupGetAllRequest backupGetAllRequest);
+
+  Backup getLatestBackup(String status);
 }
