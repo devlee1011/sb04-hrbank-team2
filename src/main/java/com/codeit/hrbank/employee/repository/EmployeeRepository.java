@@ -1,8 +1,8 @@
 package com.codeit.hrbank.employee.repository;
 
 import com.codeit.hrbank.employee.entity.Employee;
-import com.codeit.hrbank.employee.entity.EmployeeStatus;
-import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
+import java.time.Instant;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -37,4 +37,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
             " FROM Employee e " +
             "WHERE e.hireDate BETWEEN :from AND :to AND e.status IN ('ACTIVE', 'ON_LEAVE')")
     long countByDate(@Param("from")LocalDate from, @Param("to") LocalDate to);
+
+    List<Employee> findAllByCreatedAtAfter(Instant lastBackupStart);
 }

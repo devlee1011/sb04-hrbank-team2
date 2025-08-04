@@ -6,6 +6,7 @@ import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.entity.EmployeeStatus;
 import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
@@ -15,11 +16,11 @@ import java.util.Map;
 public interface EmployeeService {
     Employee getEmployee(Long id);
 
-    Employee create(EmployeeCreateRequest employeeCreateRequest, Long profileId);
+    Employee create(EmployeeCreateRequest employeeCreateRequest, Long profileId, HttpServletRequest httpServletRequest);
 
-    Employee update(Long id, EmployeeUpdateRequest employeeUpdateRequest, Long profileId);
+    Employee update(Long id, EmployeeUpdateRequest employeeUpdateRequest, Long profileId, HttpServletRequest httpServletRequest);
 
-    void delete(Long id);
+    void delete(Long id, HttpServletRequest httpServletRequest);
 
     Page<Employee> getAll(EmployeeGetAllRequest employeeGetAllRequest);
 

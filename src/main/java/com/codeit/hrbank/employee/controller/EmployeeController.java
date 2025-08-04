@@ -16,6 +16,7 @@ import com.codeit.hrbank.stored_file.service.StoredFileService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
@@ -61,14 +62,15 @@ public class EmployeeController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(encoding = @Encoding(name = "userCreateRequest", contentType = MediaType.APPLICATION_JSON_VALUE)))
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity create(@RequestPart("employeeCreateRequest") EmployeeCreateRequest employeeCreateRequest,
-                                 @RequestPart(value = "profile", required = false) MultipartFile profile) {
+                                 @RequestPart(value = "profile", required = false) MultipartFile profile,
+                                 HttpServletRequest httpServletRequest) {
         Long profileId = Optional.ofNullable(profile)
                 .map(file -> {
                     StoredFile storedFile = storedFileService.createStoredFile(profile);
                     return storedFile.getId();
                 })
                 .orElse(null);
-        Employee employee = employeeService.create(employeeCreateRequest,profileId);
+        Employee employee = employeeService.create(employeeCreateRequest,profileId,httpServletRequest);
         EmployeeDto response = employeeMapper.toDto(employee);
         return ResponseEntity.ok(response);
     }
@@ -76,14 +78,15 @@ public class EmployeeController {
     @PatchMapping("/{id}")
     public ResponseEntity update(@PathVariable("id") Long id,
                                  @RequestPart("employeeUpdateRequest") EmployeeUpdateRequest employeeUpdateRequest,
-                                 @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
+                                 @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile,
+                                 HttpServletRequest httpServletRequest) {
         Long storedFileId = Optional.ofNullable(profile)
                 .map(file -> {
                     StoredFile StoredFile = storedFileService.createStoredFile(profile);
                     return StoredFile.getId();
                 })
                 .orElse(null);
-        Employee employee = employeeService.update(id,employeeUpdateRequest, storedFileId);
+        Employee employee = employeeService.update(id,employeeUpdateRequest, storedFileId,httpServletRequest);
         EmployeeDto response = employeeMapper.toDto(employee);
         return ResponseEntity.ok(response);
     }
@@ -96,8 +99,9 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity delete(@PathVariable("id") Long id) {
-        employeeService.delete(id);
+    public ResponseEntity delete(@PathVariable("id") Long id,
+                                 HttpServletRequest httpServletRequest) {
+        employeeService.delete(id,httpServletRequest);
         return ResponseEntity.noContent().build();
     }
 
