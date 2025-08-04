@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
-    @EntityGraph(attributePaths = {"department","profile"})
+    @EntityGraph(attributePaths = {"department", "profile"})
     @Override
     Page<Employee> findAll(Specification<Employee> spec, Pageable pageable);
 
@@ -44,14 +44,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     List<EmployeeDistributionProjection> countByDepartmentAndStatusEquals(@Param("status") EmployeeStatus status);
 
     @Query("""
-             SELECT COUNT(e.id) as count
-             FROM Employee e
-             WHERE e.hireDate BETWEEN :from AND :to
-               AND e.status IN :statuses
+                SELECT COUNT(e.id)
+                FROM Employee e
+                WHERE e.hireDate <= :targetDate
+                  AND e.status IN :statuses
             """)
-    long countByHireDateBetween(@Param("from") LocalDate from,
-                                @Param("to") LocalDate to,
-                                @Param("statuses") Collection<EmployeeStatus> statuses);
+    long countByTargetDate(@Param("targetDate") LocalDate targetDate,
+                           @Param("statuses") Collection<EmployeeStatus> statuses);
 
     List<Employee> findAllByCreatedAtAfter(Instant lastBackupStart);
 

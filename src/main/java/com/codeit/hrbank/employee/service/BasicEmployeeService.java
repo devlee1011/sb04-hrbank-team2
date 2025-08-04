@@ -252,71 +252,81 @@ public class BasicEmployeeService implements EmployeeService {
     private List<EmployeeTrendProjection> getEmployeeTrendProjections(LocalDate from, LocalDate to, Collection<EmployeeStatus> statuses, UnitType unit) {
         List<EmployeeTrendProjection> result = new ArrayList<>();
 
-        long totalCount = 0L;
+        long prevCount = 0L;
+
         switch (unit) {
             case DAY -> {
-                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusDays(1)) {
-                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
-                    totalCount += currentCount;
+                for (LocalDate cur = from;
+                     !cur.isAfter(to);
+                     cur = cur.plusDays(1)) {
+                    long currentCount = employeeRepository.countByTargetDate(cur, statuses);
                     result.add(
                             new EmployeeTrendProjection(
-                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    cur,
                                     currentCount,
-                                    totalCount
+                                    prevCount
                             )
                     );
+                    prevCount = currentCount;
                 }
             }
             case WEEK -> {
-                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusWeeks(1)) {
-                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
-                    totalCount += currentCount;
+                for (LocalDate cur = from;
+                     !cur.isAfter(to);
+                     cur = cur.plusWeeks(1)) {
+                    long currentCount = employeeRepository.countByTargetDate(cur, statuses);
                     result.add(
                             new EmployeeTrendProjection(
-                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    cur,
                                     currentCount,
-                                    totalCount
+                                    prevCount
                             )
                     );
+                    prevCount = currentCount;
                 }
             }
             case MONTH -> {
-                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusMonths(1)) {
-                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
-                    totalCount += currentCount;
+                for (LocalDate cur = from;
+                     !cur.isAfter(to); cur = cur.plusMonths(1)) {
+                    long currentCount = employeeRepository.countByTargetDate(cur, statuses);
                     result.add(
                             new EmployeeTrendProjection(
                                     cur.with(TemporalAdjusters.lastDayOfMonth()),
                                     currentCount,
-                                    totalCount
+                                    prevCount
                             )
                     );
+                    prevCount = currentCount;
                 }
             }
             case QUARTER -> {
-                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusMonths(3)) {
-                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
-                    totalCount += currentCount;
+                for (LocalDate cur = from;
+                     !cur.isAfter(to);
+                     cur = cur.plusMonths(3)) {
+                    long currentCount = employeeRepository.countByTargetDate(cur, statuses);
                     result.add(
                             new EmployeeTrendProjection(
                                     cur.with(TemporalAdjusters.lastDayOfMonth()),
                                     currentCount,
-                                    totalCount
+                                    prevCount
                             )
                     );
+                    prevCount = currentCount;
                 }
             }
             case YEAR -> {
-                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusYears(1)) {
-                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
-                    totalCount += currentCount;
+                for (LocalDate cur = from;
+                     !cur.isAfter(to);
+                     cur = cur.plusYears(1)) {
+                    long currentCount = employeeRepository.countByTargetDate(cur, statuses);
                     result.add(
                             new EmployeeTrendProjection(
                                     cur.with(TemporalAdjusters.lastDayOfMonth()),
                                     currentCount,
-                                    totalCount
+                                    prevCount
                             )
                     );
+                    prevCount = currentCount;
                 }
             }
             default -> {

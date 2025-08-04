@@ -33,14 +33,14 @@ public interface EmployeeMapper {
         for (EmployeeTrendProjection projection : projections) {
             LocalDate date = projection.getTargetDate();
             long currentCount = projection.getCurrentCount();
-            long totalCount = projection.getTotalCount();
+            long prevCount = projection.getPrevCount();
 
-            long change = (currentCount == 0L) ? 0: totalCount - (totalCount-currentCount);
-            double changeRate = (totalCount == 0L) ? 0.0 : (double) change / totalCount;
+            long change = (prevCount == 0L) ? 0L : currentCount - prevCount;
+            double changeRate = (prevCount == 0L) ? 0.0 : (double) change / prevCount;
 
             EmployeeTrendDto dto = new EmployeeTrendDto(
                     date,
-                    totalCount,
+                    currentCount,
                     change,
                     changeRate
             );
