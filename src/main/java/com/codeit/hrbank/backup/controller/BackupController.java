@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,15 +27,15 @@ public class BackupController {
   private final BackupMapper backupMapper;
 
   @PostMapping
-  public BackupDto createBackup(HttpServletRequest request) {
+  public ResponseEntity createBackup(HttpServletRequest request) {
     String requestIp = getClientIp(request);
     Backup backup = backupService.createBackup(requestIp);
 
-    return backupMapper.toDto(backup);
+    return ResponseEntity.ok(backupMapper.toDto(backup));
   }
 
   @GetMapping()
-  public CursorPageResponseBackupDto getAllBackups(
+  public ResponseEntity getAllBackups(
       @ModelAttribute("backupGetAllRequest") BackupGetAllRequest backupGetAllRequest) {
 
     Page<Backup> backups = backupService.getAllBackups(backupGetAllRequest);
@@ -63,14 +64,16 @@ public class BackupController {
     List<BackupDto> content = backupList.stream()
         .map(backupMapper::toDto)
         .toList();
+    CursorPageResponseBackupDto cursorPageResponseBackupDto = CursorPageResponseBackupDto.from(
+        content, nextCursor, nextIdAfter, backups.getTotalElements(), hasNext);
 
-    return CursorPageResponseBackupDto.from(content,nextCursor,nextIdAfter,backups.getTotalElements(),hasNext);
+    return ResponseEntity.ok(cursorPageResponseBackupDto);
   }
 
   @GetMapping("/latest")
-  public BackupDto getLatestBackup(@RequestParam(required = false, defaultValue = "COMPLETED") String status) {
+  public ResponseEntity getLatestBackup(@RequestParam(required = false, defaultValue = "COMPLETED") String status) {
     Backup backup = backupService.getLatestBackup(status);
-    return backupMapper.toDto(backup);
+    return ResponseEntity.ok(backupMapper.toDto(backup));
   }
 
   private String getClientIp(HttpServletRequest request) {

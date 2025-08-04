@@ -37,3 +37,7 @@ logging:
 hrbank:
   local:
     path: localFile
+
+backup:
+  schedule:
+    cron: "0 0 * * * *"  # 초 분 시 일 월 요일
