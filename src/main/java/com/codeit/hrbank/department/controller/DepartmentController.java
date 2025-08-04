@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -32,10 +33,7 @@ public class DepartmentController {
         Long idAfter = departments.getContent().get(departments.getContent().size() - 1).getId();
 
         String cursor = null;
-        String sortField = null;
-        if(departmentGetAllRequest.sortField() == null)
-            sortField = "name";
-        switch(sortField) {
+        switch(StringUtils.hasText(departmentGetAllRequest.sortField()) ? departmentGetAllRequest.sortField() : "establishedDate") {
             case "name" -> cursor = departments.getContent().get(departments.getContent().size() - 1).getName();
             case "establishedDate" -> cursor = departments.getContent().get(departments.getContent().size() - 1).getEstablishedDate().toString();
         }

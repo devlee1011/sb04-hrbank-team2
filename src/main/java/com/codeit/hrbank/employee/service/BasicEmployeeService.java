@@ -8,8 +8,13 @@ import com.codeit.hrbank.employee.dto.request.EmployeeCreateRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
 import com.codeit.hrbank.employee.entity.Employee;
+import com.codeit.hrbank.employee.entity.EmployeeStatus;
+import com.codeit.hrbank.employee.entity.UnitType;
+import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
+import com.codeit.hrbank.employee.projection.EmployeeTrendProjection;
 import com.codeit.hrbank.employee.repository.EmployeeRepository;
 import com.codeit.hrbank.employee.specification.EmployeeSpecification;
+import com.codeit.hrbank.employee.utility.HireDatePeriod;
 import com.codeit.hrbank.event.EmployeeLogEvent;
 import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
@@ -28,7 +33,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,7 +89,7 @@ public class BasicEmployeeService implements EmployeeService {
             pageable = PageRequest.ofSize(pageSize).withSort(Sort.by(sortField).descending());
         }
 
-        Page<Employee> findList = employeeRepository.findAll(spec,pageable);
+        Page<Employee> findList = employeeRepository.findAll(spec, pageable);
 
         return findList;
     }
@@ -140,7 +147,6 @@ public class BasicEmployeeService implements EmployeeService {
         if (employeeUpdateRequest.departmentId() != null){
             validateDepartment(employeeUpdateRequest.departmentId());
         }
-
 
         List<DiffDto> logs = new ArrayList<>();
 
@@ -203,8 +209,121 @@ public class BasicEmployeeService implements EmployeeService {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
         List<DiffDto> logs = createLogForDelete(employee);
         employeeRepository.deleteById(id);
-
         eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.DELETED, "직원삭제", getClientIp(httpServletRequest), employee.getEmployeeNumber()));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate) {
+        if (fromDate == null) fromDate = LocalDate.of(1900, 1, 1);
+        if (toDate == null) toDate = LocalDate.now();
+        return employeeRepository.countByStatusAndHireDateBetween(status, fromDate, toDate);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<EmployeeDistributionProjection> getDistribution(String groupBy, EmployeeStatus status) {
+        return switch (groupBy) {
+            case "department" -> employeeRepository.countByDepartmentAndStatusEquals(status);
+            case "position" -> employeeRepository.countByPositionAndStatusEquals(status);
+            default -> employeeRepository.countByDepartmentAndStatusEquals(status);
+        };
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<EmployeeTrendProjection> getTrend(LocalDate from, LocalDate to, UnitType unit) {
+        if (to == null) to = LocalDate.now();
+        HireDatePeriod targetPeriod = new HireDatePeriod(unit, from, to);
+        var statuses = List.of(EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE);
+        return getEmployeeTrendProjections(targetPeriod.getFrom(), targetPeriod.getTo(), statuses, unit);
+    }
+
+
+    @Transactional(readOnly = true)
+    @Override
+    public long getEmployeeCountInCurrentMonth() {
+        LocalDate from = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate to = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth());
+        return employeeRepository.countByHireDateInCurrentMonth(from, to);
+    }
+
+    // 응답 dto 생성용 단위 별 날짜 생성기
+    private List<EmployeeTrendProjection> getEmployeeTrendProjections(LocalDate from, LocalDate to, Collection<EmployeeStatus> statuses, UnitType unit) {
+        List<EmployeeTrendProjection> result = new ArrayList<>();
+
+        long totalCount = 0L;
+        switch (unit) {
+            case DAY -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusDays(1)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
+                }
+            }
+            case WEEK -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusWeeks(1)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
+                }
+            }
+            case MONTH -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusMonths(1)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
+                }
+            }
+            case QUARTER -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusMonths(3)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
+                }
+            }
+            case YEAR -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusYears(1)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
+                }
+            }
+            default -> {
+                return List.of();
+            }
+        }
+        return result;
     }
 
     private void isDuplicateEmail(String email) {
