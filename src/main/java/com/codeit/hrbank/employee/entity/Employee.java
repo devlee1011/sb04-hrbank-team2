@@ -39,7 +39,7 @@ public class Employee extends BaseUpdatableEntity {
     @JoinColumn(name = "department_id")
     Department department;
 
-    @OneToOne(cascade = {CascadeType.PERSIST,CascadeType.REMOVE}, orphanRemoval = true,fetch = FetchType.EAGER)
+    @OneToOne(cascade = {CascadeType.PERSIST,CascadeType.REMOVE}, orphanRemoval = true)
     @JoinColumn(name = "profile_id")
     StoredFile profile;
 
