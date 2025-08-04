@@ -124,22 +124,23 @@ public class BasicEmployeeService implements EmployeeService {
         );
         employeeRepository.save(savedEmployee);
         List<DiffDto> logs = createLogForCreate(savedEmployee);
-        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.CREATE,employeeCreateRequest.memo(), getClientIp(httpServletRequest), savedEmployee.getEmployeeNumber()));
+        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.CREATED, employeeCreateRequest.memo(), getClientIp(httpServletRequest), savedEmployee.getEmployeeNumber()));
         return savedEmployee;
     }
 
     @Transactional
     @Override
     public Employee update(Long id, EmployeeUpdateRequest employeeUpdateRequest, Long newProfileId, HttpServletRequest httpServletRequest) {
-        if (employeeUpdateRequest.email() != null){
+        Employee findEmployee = employeeRepository.findById(id)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
+
+        if (employeeUpdateRequest.email() != null && !employeeUpdateRequest.email().equals(findEmployee.getEmail())) {
             isDuplicateEmail(employeeUpdateRequest.email());
         }
         if (employeeUpdateRequest.departmentId() != null){
             validateDepartment(employeeUpdateRequest.departmentId());
         }
 
-        Employee findEmployee = employeeRepository.findById(id)
-                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
 
         List<DiffDto> logs = new ArrayList<>();
 
@@ -192,7 +193,7 @@ public class BasicEmployeeService implements EmployeeService {
         });
 
         Employee employee = employeeRepository.save(findEmployee);
-        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.UPDATE, employeeUpdateRequest.memo(), getClientIp(httpServletRequest), employee.getEmployeeNumber()));
+        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.UPDATED, employeeUpdateRequest.memo(), getClientIp(httpServletRequest), employee.getEmployeeNumber()));
         return employee;
     }
 
@@ -203,7 +204,7 @@ public class BasicEmployeeService implements EmployeeService {
         List<DiffDto> logs = createLogForDelete(employee);
         employeeRepository.deleteById(id);
 
-        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.DELETE, "직원삭제", getClientIp(httpServletRequest), employee.getEmployeeNumber()));
+        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.DELETED, "직원삭제", getClientIp(httpServletRequest), employee.getEmployeeNumber()));
     }
 
     private void isDuplicateEmail(String email) {
@@ -238,7 +239,7 @@ public class BasicEmployeeService implements EmployeeService {
         logs.add(new DiffDto("hireDate","-",String.valueOf(employee.getHireDate())));
         logs.add(new DiffDto("name","-",employee.getName()));
         logs.add(new DiffDto("position","-",employee.getPosition()));
-        logs.add(new DiffDto("departmentName","-",employee.getDepartment().getName()));
+        logs.add(new DiffDto("department","-",employee.getDepartment().getName()));
         logs.add(new DiffDto("email","-",employee.getEmail()));
         logs.add(new DiffDto("status" ,"-",employee.getStatus().toString()));
         logs.add(new DiffDto("employeeNumber","-",employee.getEmployeeNumber()));
@@ -250,7 +251,7 @@ public class BasicEmployeeService implements EmployeeService {
         logs.add(new DiffDto("hireDate",String.valueOf(employee.getHireDate()),"-"));
         logs.add(new DiffDto("name",employee.getName(),"-"));
         logs.add(new DiffDto("position",employee.getPosition(),"-"));
-        logs.add(new DiffDto("departmentName",employee.getDepartment().getName(),"-"));
+        logs.add(new DiffDto("department",employee.getDepartment().getName(),"-"));
         logs.add(new DiffDto("email",employee.getEmail(),"-"));
         logs.add(new DiffDto("status",employee.getStatus().toString() ,"-"));
         return logs;

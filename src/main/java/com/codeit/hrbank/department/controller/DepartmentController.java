@@ -32,7 +32,10 @@ public class DepartmentController {
         Long idAfter = departments.getContent().get(departments.getContent().size() - 1).getId();
 
         String cursor = null;
-        switch(departmentGetAllRequest.sortField()) {
+        String sortField = null;
+        if(departmentGetAllRequest.sortField() == null)
+            sortField = "name";
+        switch(sortField) {
             case "name" -> cursor = departments.getContent().get(departments.getContent().size() - 1).getName();
             case "establishedDate" -> cursor = departments.getContent().get(departments.getContent().size() - 1).getEstablishedDate().toString();
         }
