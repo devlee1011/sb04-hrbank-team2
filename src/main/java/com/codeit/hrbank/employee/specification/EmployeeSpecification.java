@@ -7,6 +7,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 
@@ -16,8 +17,10 @@ public class EmployeeSpecification {
         return new Specification<Employee>() {
             @Override
             public Predicate toPredicate(Root<Employee> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                if (name == null) return null;
-                return criteriaBuilder.like(root.get("name"), "%" + name + "%");
+                if (!StringUtils.hasText(name)) return null;
+                return criteriaBuilder.like(
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("name"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                        "%" + name.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
     }
@@ -26,8 +29,10 @@ public class EmployeeSpecification {
         return new Specification<Employee>() {
             @Override
             public Predicate toPredicate(Root<Employee> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                if (email == null) return null;
-                return criteriaBuilder.like(root.get("email"), "%" + email + "%");
+                if (!StringUtils.hasText(email)) return null;
+                return criteriaBuilder.like(
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("email"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                        "%" + email.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
     }
@@ -36,8 +41,11 @@ public class EmployeeSpecification {
         return new Specification<Employee>() {
             @Override
             public Predicate toPredicate(Root<Employee> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                if (departmentName == null) return null;
-                return criteriaBuilder.like(root.get("department").get("name"), "%" + departmentName + "%");
+                if (!StringUtils.hasText(departmentName)) return null;
+
+                return criteriaBuilder.like(
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("department").get("name"), criteriaBuilder.literal((" ")), criteriaBuilder.literal(""))),
+                        "%" + departmentName.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
     }
@@ -46,8 +54,10 @@ public class EmployeeSpecification {
         return new Specification<Employee>() {
             @Override
             public Predicate toPredicate(Root<Employee> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                if (position == null) return null;
-                return criteriaBuilder.like(root.get("position"), "%" + position + "%");
+                if (!StringUtils.hasText(position)) return null;
+                return criteriaBuilder.like(
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("position"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                        "%" + position.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
     }
@@ -56,8 +66,10 @@ public class EmployeeSpecification {
         return new Specification<Employee>() {
             @Override
             public Predicate toPredicate(Root<Employee> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                if (employeeNumber == null) return null;
-                return criteriaBuilder.like(root.get("employeeNumber"), "%" + employeeNumber + "%");
+                if (!StringUtils.hasText(employeeNumber)) return null;
+                return criteriaBuilder.like(
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("employeeNumber"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                        "%" + employeeNumber.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
     }
