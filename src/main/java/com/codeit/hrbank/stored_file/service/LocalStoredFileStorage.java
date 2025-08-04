@@ -96,7 +96,7 @@ public class LocalStoredFileStorage {
 
       throw new IOException();
     } catch (IOException e) {
-      String error_extension = ".csv";
+      String error_extension = ".log";
       Path errorPath = localRoot.resolve(backupNumber + error_extension);
 
       try (BufferedWriter writer = Files.newBufferedWriter(errorPath)) {
