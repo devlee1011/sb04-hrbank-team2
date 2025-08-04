@@ -9,7 +9,9 @@ import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.entity.EmployeeStatus;
+import com.codeit.hrbank.employee.entity.UnitType;
 import com.codeit.hrbank.employee.mapper.EmployeeMapper;
+import com.codeit.hrbank.employee.projection.EmployeeTrendProjection;
 import com.codeit.hrbank.employee.service.EmployeeService;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import com.codeit.hrbank.stored_file.service.StoredFileService;
@@ -26,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -122,8 +123,8 @@ public class EmployeeController {
 
     @GetMapping("/stats/trend")
     public ResponseEntity trend(@RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to, @RequestParam(defaultValue = "month") String unit) {
-        Map<LocalDate, Long> countMap = employeeService.getTrend(from,to,unit);
-        List<EmployeeTrendDto> response = employeeMapper.toEmployeeTrendDto(countMap, unit);
+        List<EmployeeTrendProjection> projections = employeeService.getTrend(from,to, UnitType.parseUnit(unit));
+        List<EmployeeTrendDto> response = employeeMapper.toEmployeeTrendDtos(projections);
         return ResponseEntity.ok(response);
     }
 }

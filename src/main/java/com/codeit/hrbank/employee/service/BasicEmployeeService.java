@@ -9,9 +9,12 @@ import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.entity.EmployeeStatus;
+import com.codeit.hrbank.employee.entity.UnitType;
 import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
+import com.codeit.hrbank.employee.projection.EmployeeTrendProjection;
 import com.codeit.hrbank.employee.repository.EmployeeRepository;
 import com.codeit.hrbank.employee.specification.EmployeeSpecification;
+import com.codeit.hrbank.employee.utility.HireDatePeriod;
 import com.codeit.hrbank.event.EmployeeLogEvent;
 import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
@@ -30,12 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.time.temporal.ChronoUnit;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -47,14 +48,13 @@ public class BasicEmployeeService implements EmployeeService {
     private final StoredFileRepository storedFileRepository;
 
     @Override
-    @Transactional(readOnly = true)
     public Page<Employee> getAll(EmployeeGetAllRequest employeeGetAllRequest) {
         String sortField = StringUtils.hasText(employeeGetAllRequest.sortField()) ? employeeGetAllRequest.sortField() : "name";
         String sortDirection = StringUtils.hasText(employeeGetAllRequest.sortDirection()) ? employeeGetAllRequest.sortDirection() : "asc";
         Specification<Employee> spec = Specification.unrestricted();
         if ("asc".equalsIgnoreCase(sortDirection)) {
             if ("name".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.greaterThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
+                spec = spec.and(EmployeeSpecification.greaterThanName(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
             } else if ("employeeNumber".equals(sortField)) {
@@ -62,23 +62,22 @@ public class BasicEmployeeService implements EmployeeService {
             }
         } else {
             if ("name".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.lessThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
+                spec = spec.and(EmployeeSpecification.lessThanName(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
             } else if ("employeeNumber".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             }
         }
-        if (employeeGetAllRequest.nameOrEmail() != null && employeeGetAllRequest.nameOrEmail().contains("@")){
+        if (employeeGetAllRequest.nameOrEmail() != null && employeeGetAllRequest.nameOrEmail().contains("@")) {
             spec = spec.and(EmployeeSpecification.likeEmail(employeeGetAllRequest.nameOrEmail()));
-        }
-        else {
+        } else {
             spec = spec.and(EmployeeSpecification.likeName(employeeGetAllRequest.nameOrEmail()));
         }
         spec = spec.and(EmployeeSpecification.likeDepartmentName(employeeGetAllRequest.departmentName()));
         spec = spec.and(EmployeeSpecification.likePosition(employeeGetAllRequest.position()));
         spec = spec.and(EmployeeSpecification.likeEmployeeNumber(employeeGetAllRequest.employeeNumber()));
-        spec = spec.and(EmployeeSpecification.betweenHireDate(employeeGetAllRequest.hireDateFrom(),employeeGetAllRequest.hireDateTo()));
+        spec = spec.and(EmployeeSpecification.betweenHireDate(employeeGetAllRequest.hireDateFrom(), employeeGetAllRequest.hireDateTo()));
         spec = spec.and(EmployeeSpecification.equalStatus(employeeGetAllRequest.status()));
 
         Pageable pageable = null;
@@ -89,12 +88,11 @@ public class BasicEmployeeService implements EmployeeService {
             pageable = PageRequest.ofSize(pageSize).withSort(Sort.by(sortField).descending());
         }
 
-        Page<Employee> findList = employeeRepository.findAll(spec,pageable);
+        Page<Employee> findList = employeeRepository.findAll(spec, pageable);
 
         return findList;
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Employee getEmployee(Long id) {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
@@ -132,63 +130,60 @@ public class BasicEmployeeService implements EmployeeService {
         );
         employeeRepository.save(savedEmployee);
         List<DiffDto> logs = createLogForCreate(savedEmployee);
-        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.CREATE,employeeCreateRequest.memo(), getClientIp(httpServletRequest), savedEmployee.getEmployeeNumber()));
+        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.CREATE, employeeCreateRequest.memo(), getClientIp(httpServletRequest), savedEmployee.getEmployeeNumber()));
         return savedEmployee;
     }
 
     @Transactional
     @Override
     public Employee update(Long id, EmployeeUpdateRequest employeeUpdateRequest, Long newProfileId, HttpServletRequest httpServletRequest) {
-        if (employeeUpdateRequest.email() != null){
+        if (employeeUpdateRequest.email() != null) {
             isDuplicateEmail(employeeUpdateRequest.email());
         }
-        if (employeeUpdateRequest.departmentId() != null){
+        if (employeeUpdateRequest.departmentId() != null) {
             validateDepartment(employeeUpdateRequest.departmentId());
         }
 
         Employee findEmployee = employeeRepository.findById(id)
-                        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
-
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
         List<DiffDto> logs = new ArrayList<>();
 
         Optional.ofNullable(employeeUpdateRequest.name())
                 .filter(StringUtils::hasText)
                 .ifPresent(name -> {
-                    logs.add(new DiffDto("name",findEmployee.getName(),name));
+                    logs.add(new DiffDto("name", findEmployee.getName(), name));
                     findEmployee.setName(name);
                 });
 
         Optional.ofNullable(employeeUpdateRequest.email())
                 .filter(StringUtils::hasText)
                 .ifPresent(email -> {
-                    logs.add(new DiffDto("email",findEmployee.getEmail(),email));
+                    logs.add(new DiffDto("email", findEmployee.getEmail(), email));
                     findEmployee.setEmail(email);
                 });
 
         Optional.ofNullable(employeeUpdateRequest.departmentId())
                 .ifPresent(departmentId -> {
                     Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId())
-                                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
-                    logs.add(new DiffDto("DepartmentName", findEmployee.getDepartment().getName(),findDepartment.getName()));
+                            .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
+                    logs.add(new DiffDto("DepartmentName", findEmployee.getDepartment().getName(), findDepartment.getName()));
                     findEmployee.setDepartment(findDepartment);
                 });
 
         Optional.ofNullable(employeeUpdateRequest.position())
                 .filter(StringUtils::hasText)
                 .ifPresent(position -> {
-                    logs.add(new DiffDto("position",findEmployee.getPosition(),position));
+                    logs.add(new DiffDto("position", findEmployee.getPosition(), position));
                     findEmployee.setPosition(position);
                 });
-
         Optional.ofNullable(employeeUpdateRequest.hireDate())
                 .ifPresent(hireDate -> {
-                    logs.add(new DiffDto("hireDate",String.valueOf(findEmployee.getHireDate()),String.valueOf(hireDate)));
+                    logs.add(new DiffDto("hireDate", String.valueOf(findEmployee.getHireDate()), String.valueOf(hireDate)));
                     findEmployee.setHireDate(hireDate);
                 });
-
         Optional.ofNullable(employeeUpdateRequest.status())
                 .ifPresent(status -> {
-                    logs.add(new DiffDto("status",String.valueOf(findEmployee.getStatus()),String.valueOf(status)));
+                    logs.add(new DiffDto("status", String.valueOf(findEmployee.getStatus()), String.valueOf(status)));
                     findEmployee.setStatus(status);
                 });
 
@@ -206,11 +201,12 @@ public class BasicEmployeeService implements EmployeeService {
 
     @Transactional
     @Override
-    public void delete(Long id,HttpServletRequest httpServletRequest) {
+    public void delete(Long id, HttpServletRequest httpServletRequest) {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND));
         List<DiffDto> logs = createLogForDelete(employee);
         employeeRepository.deleteById(id);
 
+        eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.DELETE, "직원삭제", getClientIp(httpServletRequest), employee.getEmployeeNumber()));
         eventPublisher.publishEvent(new EmployeeLogEvent(logs, ChangeLogType.DELETE, "직원삭제", getClientIp(httpServletRequest), employee.getEmployeeNumber()));
     }
 
@@ -234,76 +230,103 @@ public class BasicEmployeeService implements EmployeeService {
 
     @Transactional(readOnly = true)
     @Override
-    public Map<LocalDate, Long> getTrend(LocalDate from, LocalDate to, String unit) {
-        if (!StringUtils.hasText(unit)) unit = "month";
+    public List<EmployeeTrendProjection> getTrend(LocalDate from, LocalDate to, UnitType unit) {
         if (to == null) to = LocalDate.now();
+        HireDatePeriod targetPeriod = new HireDatePeriod(unit, from, to);
+        var statuses = List.of(EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE);
+        return getEmployeeTrendProjections(targetPeriod.getFromStart(), targetPeriod.getToEnd(), statuses, unit);
+    }
 
-        Map<LocalDate, Long> result = new LinkedHashMap<>();
+    // 응답 dto 생성용 단위 별 날짜 생성기
+    private List<EmployeeTrendProjection> getEmployeeTrendProjections(LocalDate from, LocalDate to, Collection<EmployeeStatus> statuses, UnitType unit) {
+        List<EmployeeTrendProjection> result = new ArrayList<>();
+
+        long totalCount = 0L;
         switch (unit) {
-            case "month" -> {
-                if (from == null) from = to.minusMonths(12).withDayOfMonth(1);
-                else from = from.withDayOfMonth(1); // 정직하게 해당 월의 시작으로 맞춤
-                to = to.withDayOfMonth(1); // to도 월 단위 비교를 위해 시작일로 맞춤
-
-                long monthsBetween = ChronoUnit.MONTHS.between(from, to);
-                for (int i = 0; i <= monthsBetween; i++) {
-                    LocalDate monthEnd = from.plusMonths(i);
-                    monthEnd = monthEnd.withDayOfMonth(monthEnd.lengthOfMonth());
-
-                    long count = employeeRepository.countByDate(from, monthEnd);
-                    result.put(monthEnd, count);
+            case DAY -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusDays(1)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
                 }
             }
-            case "day" -> {
-                if (from == null) from = to.minusDays(12);
-                long daysBetween = ChronoUnit.DAYS.between(from, to);
-                for (int i = 0; i <= daysBetween; i++) {
-                    LocalDate dayEnd = from.plusDays(i);
-                    long count = employeeRepository.countByDate(from, dayEnd);
-                    result.put(dayEnd, count);
+            case WEEK -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusWeeks(1)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
                 }
             }
-            case "week" -> {
-                if (from == null) from = to.minusWeeks(12);
-                long weeksBetween = ChronoUnit.WEEKS.between(from, to);
-                for (int i = 0; i <= weeksBetween; i++) {
-                    LocalDate weekEnd = from.plusWeeks(i);
-                    long count = employeeRepository.countByDate(from, weekEnd);
-                    result.put(weekEnd, count);
+            case MONTH -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusMonths(1)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
                 }
             }
-            case "year" -> {
-                if (from == null) from = to.minusYears(12);
-                long yearsBetween = ChronoUnit.YEARS.between(from, to);
-                for (int i = 0; i <= yearsBetween; i++) {
-                    LocalDate yearEnd = from.plusYears(i);
-                    long count = employeeRepository.countByDate(from, yearEnd);
-                    result.put(yearEnd, count);
+            case QUARTER -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusMonths(3)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
                 }
             }
-            case "quarter" -> {
-                if (from == null) from = to.minusMonths(12*3);
-                long quartersBetween = ChronoUnit.MONTHS.between(from, to);
-                for (int i = 0; i <= quartersBetween; i = i + 3) {
-                    LocalDate quarterEnd = from.plusMonths(i);
-                    long count = employeeRepository.countByDate(from, quarterEnd);
-                    result.put(quarterEnd, count);
+            case YEAR -> {
+                for (LocalDate cur = from; !cur.isAfter(to); cur = cur.plusYears(1)) {
+                    long currentCount = employeeRepository.countByHireDateBetween(cur, cur.with(TemporalAdjusters.lastDayOfMonth()), statuses);
+                    totalCount += currentCount;
+                    result.add(
+                            new EmployeeTrendProjection(
+                                    cur.with(TemporalAdjusters.lastDayOfMonth()),
+                                    currentCount,
+                                    totalCount
+                            )
+                    );
                 }
+            }
+            default -> {
+                return List.of();
             }
         }
         return result;
     }
 
     private void isDuplicateEmail(String email) {
-        if(employeeRepository.existsByEmail(email)) throw new BusinessLogicException(ExceptionCode.EMAIL_ALREADY_EXISTS);
+        if (employeeRepository.existsByEmail(email))
+            throw new BusinessLogicException(ExceptionCode.EMAIL_ALREADY_EXISTS);
     }
 
     private void validateDepartment(Long departmentId) {
-        if(!departmentRepository.existsById(departmentId)) throw new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND);
+        if (!departmentRepository.existsById(departmentId))
+            throw new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND);
     }
 
     private void validateEmployee(Long id) {
-        if(!employeeRepository.existsById(id)) throw new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND);
+        if (!employeeRepository.existsById(id)) throw new BusinessLogicException(ExceptionCode.EMPLOYEE_NOT_FOUND);
     }
 
     private String getClientIp(HttpServletRequest request) {
@@ -323,24 +346,24 @@ public class BasicEmployeeService implements EmployeeService {
 
     private List<DiffDto> createLogForCreate(Employee employee) {
         List<DiffDto> logs = new ArrayList<>();
-        logs.add(new DiffDto("hireDate","-",String.valueOf(employee.getHireDate())));
-        logs.add(new DiffDto("name","-",employee.getName()));
-        logs.add(new DiffDto("position","-",employee.getPosition()));
-        logs.add(new DiffDto("departmentName","-",employee.getDepartment().getName()));
-        logs.add(new DiffDto("email","-",employee.getEmail()));
-        logs.add(new DiffDto("status" ,"-",employee.getStatus().toString()));
-        logs.add(new DiffDto("employeeNumber","-",employee.getEmployeeNumber()));
+        logs.add(new DiffDto("hireDate", "-", String.valueOf(employee.getHireDate())));
+        logs.add(new DiffDto("name", "-", employee.getName()));
+        logs.add(new DiffDto("position", "-", employee.getPosition()));
+        logs.add(new DiffDto("departmentName", "-", employee.getDepartment().getName()));
+        logs.add(new DiffDto("email", "-", employee.getEmail()));
+        logs.add(new DiffDto("status", "-", employee.getStatus().toString()));
+        logs.add(new DiffDto("employeeNumber", "-", employee.getEmployeeNumber()));
         return logs;
     }
 
     private List<DiffDto> createLogForDelete(Employee employee) {
         List<DiffDto> logs = new ArrayList<>();
-        logs.add(new DiffDto("hireDate",String.valueOf(employee.getHireDate()),"-"));
-        logs.add(new DiffDto("name",employee.getName(),"-"));
-        logs.add(new DiffDto("position",employee.getPosition(),"-"));
-        logs.add(new DiffDto("departmentName",employee.getDepartment().getName(),"-"));
-        logs.add(new DiffDto("email",employee.getEmail(),"-"));
-        logs.add(new DiffDto("status",employee.getStatus().toString() ,"-"));
+        logs.add(new DiffDto("hireDate", String.valueOf(employee.getHireDate()), "-"));
+        logs.add(new DiffDto("name", employee.getName(), "-"));
+        logs.add(new DiffDto("position", employee.getPosition(), "-"));
+        logs.add(new DiffDto("departmentName", employee.getDepartment().getName(), "-"));
+        logs.add(new DiffDto("email", employee.getEmail(), "-"));
+        logs.add(new DiffDto("status", employee.getStatus().toString(), "-"));
         return logs;
     }
 }

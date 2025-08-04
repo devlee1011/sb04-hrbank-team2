@@ -1,14 +1,16 @@
 package com.codeit.hrbank.employee.repository;
 
 import com.codeit.hrbank.employee.entity.Employee;
-import java.time.Instant;
-import java.util.List;
+import com.codeit.hrbank.employee.entity.EmployeeStatus;
+import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
@@ -33,10 +35,16 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
             "GROUP BY e.department")
     List<EmployeeDistributionProjection> countByDepartmentAndStatusEquals(@Param("status") EmployeeStatus status);
 
-    @Query("SELECT COUNT(e.id)" +
-            " FROM Employee e " +
-            "WHERE e.hireDate BETWEEN :from AND :to AND e.status IN ('ACTIVE', 'ON_LEAVE')")
-    long countByDate(@Param("from")LocalDate from, @Param("to") LocalDate to);
+    @Query("""
+             SELECT COUNT(e.id) as count
+             FROM Employee e
+             WHERE e.hireDate BETWEEN :from AND :to
+               AND e.status IN :statuses
+            """)
+    long countByHireDateBetween(@Param("from") LocalDate from,
+                                      @Param("to") LocalDate to,
+                                      @Param("statuses") Collection<EmployeeStatus> statuses);
 
     List<Employee> findAllByCreatedAtAfter(Instant lastBackupStart);
+
 }

@@ -6,13 +6,13 @@ import com.codeit.hrbank.employee.dto.EmployeeTrendDto;
 import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
+import com.codeit.hrbank.employee.projection.EmployeeTrendProjection;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Mapper(componentModel = "spring")
 public interface EmployeeMapper {
@@ -27,26 +27,25 @@ public interface EmployeeMapper {
     EmployeeDistributionDto toEmployeeDistributionDto(EmployeeDistributionProjection projection, long employeeCount);
 
     default
-    List<EmployeeTrendDto> toEmployeeTrendDto(Map<LocalDate, Long> countMap, String unit) {
+    List<EmployeeTrendDto> toEmployeeTrendDtos(List<EmployeeTrendProjection> projections) {
         List<EmployeeTrendDto> employeeTrendDtos = new ArrayList<>();
 
-        long prev = 0L;
+        for (EmployeeTrendProjection projection : projections) {
+            LocalDate date = projection.getTargetDate();
+            long currentCount = projection.getCurrentCount();
+            long totalCount = projection.getTotalCount();
 
-        for (Map.Entry<LocalDate, Long> entry : countMap.entrySet()) {
-            LocalDate date = entry.getKey();
-            long count = entry.getValue();
-            long change = count - prev;
-            double changeRate = (prev == 0L) ? 0.0 : (double) change / prev;
+            long change = (currentCount == 0L) ? 0: totalCount - (totalCount-currentCount);
+            double changeRate = (totalCount == 0L) ? 0.0 : (double) change / totalCount;
 
             EmployeeTrendDto dto = new EmployeeTrendDto(
                     date,
-                    count,
+                    totalCount,
                     change,
                     changeRate
             );
 
             employeeTrendDtos.add(dto);
-            prev = count;
         }
 
         return employeeTrendDtos;

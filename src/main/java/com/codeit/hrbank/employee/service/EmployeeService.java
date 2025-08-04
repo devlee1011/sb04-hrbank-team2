@@ -5,13 +5,14 @@ import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.dto.request.EmployeeUpdateRequest;
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.entity.EmployeeStatus;
+import com.codeit.hrbank.employee.entity.UnitType;
 import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
+import com.codeit.hrbank.employee.projection.EmployeeTrendProjection;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 public interface EmployeeService {
     Employee getEmployee(Long id);
@@ -28,5 +29,5 @@ public interface EmployeeService {
 
     List<EmployeeDistributionProjection> getDistribution(String groupBy, EmployeeStatus status);
 
-    Map<LocalDate, Long> getTrend(LocalDate from, LocalDate to, String unit);
+    List<EmployeeTrendProjection> getTrend(LocalDate from, LocalDate to, UnitType unit);
 }
