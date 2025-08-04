@@ -47,7 +47,7 @@ public class DepartmentSpecification {
     public static Specification<Department> greaterThanEstablishedDate(Long idAfter, LocalDate cursor) {
         return (root, query, criteriaBuilder) -> {
             if (idAfter == null || cursor == null) return null;
-            Predicate greaterThanEstablishedDate = criteriaBuilder.greaterThan(root.get("name"), cursor);
+            Predicate greaterThanEstablishedDate = criteriaBuilder.greaterThan(root.get("establishedDate"), cursor);
             Predicate sort = criteriaBuilder.and(
                     criteriaBuilder.equal(root.get("establishedDate"), cursor),
                     criteriaBuilder.greaterThan(root.get("id"), idAfter)
@@ -73,7 +73,7 @@ public class DepartmentSpecification {
     public static Specification<Department> lessThanEstablishedDate(Long idAfter, LocalDate cursor) {
         return (root, query, criteriaBuilder) -> {
             if (idAfter == null || cursor == null) return null;
-            Predicate lessThanEstablishedDate = criteriaBuilder.lessThan(root.get("name"), cursor);
+            Predicate lessThanEstablishedDate = criteriaBuilder.lessThan(root.get("establishedDate"), cursor);
             Predicate sort = criteriaBuilder.and(
                     criteriaBuilder.equal(root.get("establishedDate"), cursor),
                     criteriaBuilder.lessThan(root.get("id"), idAfter)
