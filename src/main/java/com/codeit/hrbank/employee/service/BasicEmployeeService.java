@@ -234,7 +234,7 @@ public class BasicEmployeeService implements EmployeeService {
         if (to == null) to = LocalDate.now();
         HireDatePeriod targetPeriod = new HireDatePeriod(unit, from, to);
         var statuses = List.of(EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE);
-        return getEmployeeTrendProjections(targetPeriod.getFromStart(), targetPeriod.getToEnd(), statuses, unit);
+        return getEmployeeTrendProjections(targetPeriod.getFrom(), targetPeriod.getTo(), statuses, unit);
     }
 
 
