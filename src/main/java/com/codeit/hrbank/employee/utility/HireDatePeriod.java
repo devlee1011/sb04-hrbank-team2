@@ -12,36 +12,36 @@ import java.time.temporal.TemporalAdjusters;
 @Getter
 public class HireDatePeriod {
 
-    private final LocalDate fromStart;
-    private final LocalDate toEnd;
+    private final LocalDate from;
+    private final LocalDate to;
 
-    public HireDatePeriod(LocalDate fromStart, LocalDate toEnd) {
-        this.fromStart = fromStart;
-        this.toEnd = toEnd;
+    public HireDatePeriod(LocalDate from, LocalDate to) {
+        this.from = from;
+        this.to = to;
     }
 
     public HireDatePeriod(UnitType unitType, LocalDate from, LocalDate to) {
         // 일: 초기화 없음, 주: 해당 주차 월요일, 월/분기/년: 해당 월의 1일/마지막일
         switch (unitType) {
             case DAY -> {
-                this.fromStart = from != null ? from : to.minusDays(12);
-                this.toEnd = to;
+                this.from = from != null ? from : to.minusDays(12);
+                this.to = to;
             }
             case WEEK -> {
-                this.fromStart = from != null ? from.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)) : to.minusWeeks(12).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-                this.toEnd = to;
+                this.from = from != null ? from.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)) : to.minusWeeks(12).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                this.to = to;
             }
             case MONTH -> {
-                this.fromStart = from != null ? from.withDayOfMonth(1) : to.minusMonths(12).withDayOfMonth(1);
-                this.toEnd = to.with(TemporalAdjusters.lastDayOfMonth());
+                this.from = from != null ? from.withDayOfMonth(1) : to.minusMonths(12).withDayOfMonth(1);
+                this.to = to.with(TemporalAdjusters.lastDayOfMonth());
             }
             case QUARTER -> {
-                this.fromStart = from != null ? from.withDayOfMonth(1) : to.minusMonths(12 * 3).withDayOfMonth(1);
-                this.toEnd = to.with(TemporalAdjusters.lastDayOfMonth());
+                this.from = from != null ? from.withDayOfMonth(1) : to.minusMonths(12 * 3).withDayOfMonth(1);
+                this.to = to.with(TemporalAdjusters.lastDayOfMonth());
             }
             case YEAR -> {
-                this.fromStart = from != null ? from.with(TemporalAdjusters.firstDayOfYear()) : to.minusYears(12).with(TemporalAdjusters.firstDayOfMonth());
-                this.toEnd = to.with(TemporalAdjusters.lastDayOfYear());
+                this.from = from != null ? from.with(TemporalAdjusters.firstDayOfYear()) : to.minusYears(12).with(TemporalAdjusters.firstDayOfMonth());
+                this.to = to.with(TemporalAdjusters.lastDayOfYear());
             }
             default -> {
                 throw new BusinessLogicException(ExceptionCode.INVALID_DATE_FORMAT);
