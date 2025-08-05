@@ -26,7 +26,7 @@ public class BasicStoredFileService implements StoredFileService {
     try {
       localStoredFileStorage.put(storedFile.getId(), file.getBytes());
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new BusinessLogicException(ExceptionCode.FILE_IO_INTERRUPTED);
     }
 
     return savedFile;
