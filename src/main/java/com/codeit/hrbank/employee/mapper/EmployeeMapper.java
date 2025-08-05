@@ -3,7 +3,6 @@ package com.codeit.hrbank.employee.mapper;
 import com.codeit.hrbank.employee.dto.EmployeeDistributionDto;
 import com.codeit.hrbank.employee.dto.EmployeeDto;
 import com.codeit.hrbank.employee.dto.EmployeeTrendDto;
-import com.codeit.hrbank.employee.dto.request.EmployeeGetAllRequest;
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
 import com.codeit.hrbank.employee.projection.EmployeeTrendProjection;
@@ -21,9 +20,7 @@ public interface EmployeeMapper {
     @Mapping(target = "profileImageId", expression = "java(employee.getProfile() != null ? employee.getProfile().getId() : null)")
     EmployeeDto toDto(Employee employee);
 
-    EmployeeGetAllRequest toGetAllRequest(EmployeeDto dto);
-
-    @Mapping(target = "percentage", expression = "java((double) projection.getCount() / employeeCount)")
+    @Mapping(target = "percentage", expression = "java(((double) (projection.getCount()) / employeeCount)*100.0)")
     EmployeeDistributionDto toEmployeeDistributionDto(EmployeeDistributionProjection projection, long employeeCount);
 
     default
@@ -42,7 +39,7 @@ public interface EmployeeMapper {
                     date,
                     currentCount,
                     change,
-                    changeRate
+                    changeRate*100.0
             );
 
             employeeTrendDtos.add(dto);
