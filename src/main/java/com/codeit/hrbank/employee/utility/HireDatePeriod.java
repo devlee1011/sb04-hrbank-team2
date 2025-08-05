@@ -28,19 +28,19 @@ public class HireDatePeriod {
                 this.to = to;
             }
             case WEEK -> {
-                this.from = from != null ? from.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)) : to.minusWeeks(12).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                this.from = from != null ? from.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)) : to.minusWeeks(12).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
                 this.to = to;
             }
             case MONTH -> {
-                this.from = from != null ? from.withDayOfMonth(1) : to.minusMonths(12).withDayOfMonth(1);
+                this.from = from != null ? from.with(TemporalAdjusters.lastDayOfMonth()) : to.minusMonths(12).with(TemporalAdjusters.lastDayOfMonth());
                 this.to = to.with(TemporalAdjusters.lastDayOfMonth());
             }
             case QUARTER -> {
-                this.from = from != null ? from.withDayOfMonth(1) : to.minusMonths(12 * 3).withDayOfMonth(1);
+                this.from = from != null ? from.with(TemporalAdjusters.lastDayOfMonth()) : to.minusMonths(12 * 3).with(TemporalAdjusters.lastDayOfMonth());
                 this.to = to.with(TemporalAdjusters.lastDayOfMonth());
             }
             case YEAR -> {
-                this.from = from != null ? from.with(TemporalAdjusters.firstDayOfYear()) : to.minusYears(12).with(TemporalAdjusters.firstDayOfMonth());
+                this.from = from != null ? from.with(TemporalAdjusters.lastDayOfYear()) : to.minusYears(12).with(TemporalAdjusters.lastDayOfYear());
                 this.to = to.with(TemporalAdjusters.lastDayOfYear());
             }
             default -> {

@@ -2,6 +2,7 @@ package com.codeit.hrbank.employee.repository;
 
 import com.codeit.hrbank.employee.entity.Employee;
 import com.codeit.hrbank.employee.entity.EmployeeStatus;
+import com.codeit.hrbank.employee.projection.EmployeeCountByDepartmentProjection;
 import com.codeit.hrbank.employee.projection.EmployeeDistributionProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,18 +19,21 @@ import java.util.Collection;
 import java.util.List;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
-    @EntityGraph(attributePaths = {"department","profile"})
+    @EntityGraph(attributePaths = {"department", "profile"})
     @Override
     Page<Employee> findAll(Specification<Employee> spec, Pageable pageable);
 
-    boolean existsByEmail(String email);
+    Boolean existsByEmail(String email);
 
     Long countByDepartmentId(Long departmentId);
 
     @Query("SELECT COUNT(e.id) " +
             "FROM Employee e " +
             "WHERE e.status = :status AND e.hireDate BETWEEN :fromDate AND :toDate")
-    long countByStatusAndHireDateBetween(EmployeeStatus status, LocalDate fromDate, LocalDate toDate);
+    Long countByStatusAndHireDateBetween(EmployeeStatus status, @Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate);
+
+    @Query("SELECT COUNT (e.id) FROM Employee e")
+    Long countTotalEmployee();
 
     @Query("SELECT e.position as groupKey, COUNT(e.id) as count " +
             "FROM Employee e " +
@@ -44,14 +48,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     List<EmployeeDistributionProjection> countByDepartmentAndStatusEquals(@Param("status") EmployeeStatus status);
 
     @Query("""
-             SELECT COUNT(e.id) as count
-             FROM Employee e
-             WHERE e.hireDate BETWEEN :from AND :to
-               AND e.status IN :statuses
+                SELECT COUNT(e.id)
+                FROM Employee e
+                WHERE e.hireDate <= :targetDate
+                  AND e.status IN :statuses
             """)
-    long countByHireDateBetween(@Param("from") LocalDate from,
-                                @Param("to") LocalDate to,
-                                @Param("statuses") Collection<EmployeeStatus> statuses);
+    Long countByTargetDate(@Param("targetDate") LocalDate targetDate,
+                           @Param("statuses") Collection<EmployeeStatus> statuses);
 
     List<Employee> findAllByCreatedAtAfter(Instant lastBackupStart);
 
@@ -61,6 +64,15 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
                 FROM Employee e
                 WHERE e.hireDate BETWEEN :from AND :to
             """)
-    long countByHireDateInCurrentMonth(@Param("from") LocalDate from,
+    Long countByHireDateInCurrentMonth(@Param("from") LocalDate from,
                                        @Param("to") LocalDate to);
+
+    @Query("""
+    SELECT e.department.id AS departmentId,
+            COUNT(e.id) AS employeeCount
+    FROM Employee e
+    WHERE e.department.id IN :departmentIds
+    GROUP BY e.department.id
+""")
+    List<EmployeeCountByDepartmentProjection> countEmployeeCountsByDepartmentIds(@Param("departmentIds") List<Long> departmentIds);
 }

@@ -5,6 +5,7 @@ import com.codeit.hrbank.department.dto.request.DepartmentUpdateRequest;
 import com.codeit.hrbank.department.entity.Department;
 import com.codeit.hrbank.department.repository.DepartmentRepository;
 import com.codeit.hrbank.department.specification.DepartmentSpecification;
+import com.codeit.hrbank.employee.projection.EmployeeCountByDepartmentProjection;
 import com.codeit.hrbank.employee.repository.EmployeeRepository;
 import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
@@ -20,6 +21,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -112,7 +114,6 @@ public class BasicDepartmentService implements DepartmentService {
         Department department = getDepartment(id);
 
         // departmentUpdateRequest에 수정할 항목이 비어있으면 기존 값 유지
-
         String newName = StringUtils.hasText(departmentUpdateRequest.name()) ? departmentUpdateRequest.name() : department.getName();
 
         String newDescription = StringUtils.hasText(departmentUpdateRequest.description()) ? departmentUpdateRequest.description() : department.getDescription();
@@ -146,6 +147,13 @@ public class BasicDepartmentService implements DepartmentService {
         departmentRepository.delete(department);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public List<EmployeeCountByDepartmentProjection> getEmployeeCountsByDepartmentId(List<Long> departmentIds) {
+        return employeeRepository.countEmployeeCountsByDepartmentIds(departmentIds);
+    }
+
+    @Transactional(readOnly = true)
     @Override
     public Long getEmployeeCountByDepartmentId(Long departmentId) {
         return employeeRepository.countByDepartmentId(departmentId);
