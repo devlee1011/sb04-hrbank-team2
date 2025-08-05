@@ -56,7 +56,7 @@ public class BasicEmployeeService implements EmployeeService {
             if ("name".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.greaterThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
+                spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("employeeNumber".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.greaterThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             }
@@ -64,7 +64,7 @@ public class BasicEmployeeService implements EmployeeService {
             if ("name".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.lessThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
+                spec = spec.and(EmployeeSpecification.lessThanHireDate(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("employeeNumber".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             }
@@ -216,7 +216,7 @@ public class BasicEmployeeService implements EmployeeService {
     @Override
     public Long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate) {
         if (fromDate == null) fromDate = LocalDate.of(1900, 1, 1);
-        if (toDate == null) toDate = LocalDate.now();
+        if (toDate == null) toDate = LocalDate.now().plusYears(200);
         if (status == null) return employeeRepository.countTotalEmployee();
         return employeeRepository.countByStatusAndHireDateBetween(status, fromDate, toDate);
     }
@@ -234,7 +234,6 @@ public class BasicEmployeeService implements EmployeeService {
     @Transactional(readOnly = true)
     @Override
     public List<EmployeeTrendProjection> getTrend(LocalDate from, LocalDate to, UnitType unit) {
-        if (to == null) to = LocalDate.now();
         HireDatePeriod targetPeriod = new HireDatePeriod(unit, from, to);
         var statuses = List.of(EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE);
         return getEmployeeTrendProjections(targetPeriod.getFrom(), targetPeriod.getTo(), statuses, unit);

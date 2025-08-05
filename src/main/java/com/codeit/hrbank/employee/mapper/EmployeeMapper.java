@@ -20,7 +20,7 @@ public interface EmployeeMapper {
     @Mapping(target = "profileImageId", expression = "java(employee.getProfile() != null ? employee.getProfile().getId() : null)")
     EmployeeDto toDto(Employee employee);
 
-    @Mapping(target = "percentage", expression = "java(((double) (projection.getCount()) / employeeCount)*100.0)")
+    @Mapping(target = "percentage", expression = "java(employeeCount == 0 ? 0.0 : ((double) projection.getCount() / employeeCount) * 100.0)")
     EmployeeDistributionDto toEmployeeDistributionDto(EmployeeDistributionProjection projection, long employeeCount);
 
     default
@@ -32,8 +32,8 @@ public interface EmployeeMapper {
             long currentCount = projection.getCurrentCount();
             long prevCount = projection.getPrevCount();
 
-            long change = (prevCount == 0L) ? 0L : currentCount - prevCount;
-            double changeRate = (prevCount == 0L) ? 0.0 : (double) change / prevCount;
+            long change = currentCount - prevCount;
+            double changeRate = (prevCount == 0L) ? currentCount : (double) change / prevCount;
 
             EmployeeTrendDto dto = new EmployeeTrendDto(
                     date,

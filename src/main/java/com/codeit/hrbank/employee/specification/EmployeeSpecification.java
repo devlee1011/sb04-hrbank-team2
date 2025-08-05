@@ -108,14 +108,15 @@ public class EmployeeSpecification {
         };
     }
 
-    public static Specification<Employee> greaterThanHireDate(Long idAfter, LocalDate cursor) {
+    public static Specification<Employee> greaterThanHireDate(Long idAfter, String cursor) {
         return new Specification<Employee>() {
             @Override
             public Predicate toPredicate(Root<Employee> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (idAfter == null || cursor == null) return null;
-                Predicate greaterThanName = criteriaBuilder.greaterThan(root.get("hireDate"), cursor);
+                LocalDate dateCursor = LocalDate.parse(cursor);
+                Predicate greaterThanName = criteriaBuilder.greaterThan(root.get("hireDate"), dateCursor);
                 Predicate sort = criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("hireDate"), cursor),
+                        criteriaBuilder.equal(root.get("hireDate"), dateCursor),
                         criteriaBuilder.greaterThan(root.get("id"), idAfter));
                 return criteriaBuilder.or(greaterThanName, sort);
             }
@@ -150,14 +151,15 @@ public class EmployeeSpecification {
         };
     }
 
-    public static Specification<Employee> lessThanHireDate(Long idAfter, LocalDate cursor) {
+    public static Specification<Employee> lessThanHireDate(Long idAfter, String cursor) {
         return new Specification<Employee>() {
             @Override
             public Predicate toPredicate(Root<Employee> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (idAfter == null || cursor == null) return null;
-                Predicate greaterThanName = criteriaBuilder.lessThan(root.get("hireDate"), cursor);
+                LocalDate dateCursor = LocalDate.parse(cursor);
+                Predicate greaterThanName = criteriaBuilder.lessThan(root.get("hireDate"), dateCursor);
                 Predicate sort = criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("hireDate"), cursor),
+                        criteriaBuilder.equal(root.get("hireDate"), dateCursor),
                         criteriaBuilder.lessThan(root.get("id"), idAfter));
                 return criteriaBuilder.or(greaterThanName, sort);
             }
