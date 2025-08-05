@@ -56,7 +56,7 @@ public class BasicEmployeeService implements EmployeeService {
             if ("name".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.greaterThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
+                spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("employeeNumber".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.greaterThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             }
@@ -64,7 +64,7 @@ public class BasicEmployeeService implements EmployeeService {
             if ("name".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.lessThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
+                spec = spec.and(EmployeeSpecification.lessThanHireDate(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("employeeNumber".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             }
