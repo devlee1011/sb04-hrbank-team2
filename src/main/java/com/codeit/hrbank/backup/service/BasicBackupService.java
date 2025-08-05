@@ -12,7 +12,7 @@ import com.codeit.hrbank.stored_file.repository.StoredFileRepository;
 import com.codeit.hrbank.stored_file.service.LocalStoredFileStorage;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,7 +47,7 @@ public class BasicBackupService implements BackupService {
     Instant endTime;
 
     if (!employees.isEmpty()) {
-      long totalCount = backupRepository.count();
+      long totalCount = storedFileRepository.count();
 
       StoredFile storedFile = localStoredFileStorage.backup(employees, totalCount+1, new StoredFile());
       endTime = Instant.now();
@@ -93,7 +93,9 @@ public class BasicBackupService implements BackupService {
   @Transactional(readOnly = true)
   public Backup getLatestBackup(String statusString) {
     BackupStatus status = BackupStatus.valueOf(statusString.toUpperCase());
-    return backupRepository.findFirstByStatusOrderByIdDesc(status)
-        .orElseThrow(() -> new NoSuchElementException("해당 상태의 백업 기록이 없습니다."));
+
+    Optional<Backup> optionalBackup = backupRepository.findFirstByStatusOrderByIdDesc(status);
+
+    return optionalBackup.orElseGet(Backup::new);
   }
 }

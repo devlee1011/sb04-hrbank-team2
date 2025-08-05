@@ -1,6 +1,8 @@
 package com.codeit.hrbank.stored_file.service;
 
 import com.codeit.hrbank.employee.entity.Employee;
+import com.codeit.hrbank.exception.BusinessLogicException;
+import com.codeit.hrbank.exception.ExceptionCode;
 import com.codeit.hrbank.stored_file.entity.StoredFile;
 import jakarta.annotation.PostConstruct;
 import java.io.BufferedWriter;
@@ -9,8 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,7 @@ public class LocalStoredFileStorage {
         Files.createDirectories(localRoot);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new BusinessLogicException(ExceptionCode.FILE_IO_INTERRUPTED);
     }
   }
 
@@ -42,18 +43,31 @@ public class LocalStoredFileStorage {
     try {
       Files.write(path, bytes);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new BusinessLogicException(ExceptionCode.FILE_IO_INTERRUPTED);
     }
     return storedFileId;
   }
 
   public ResponseEntity download(StoredFile storedFile) {
-    Resource resource;
+    StringBuilder fileNameBuilder = new StringBuilder().append(storedFile.getId());
+    InputStreamResource resource;
 
+    if (storedFile.getFileName().endsWith(".csv")) {
+      fileNameBuilder.append(".csv");
+    } else if (storedFile.getFileName().endsWith(".log")) {
+      fileNameBuilder.append(".log");
+    } else {
+      fileNameBuilder.append(".ser");
+    }
+
+    Path filePath = localRoot.resolve(fileNameBuilder.toString());
+
+    byte[] fileBytes;
     try {
-      resource = new UrlResource(resolve(storedFile.getId()).toUri());
+//      resource = new InputStreamResource(new FileInputStream(file.toString()));
+      fileBytes = Files.readAllBytes(filePath);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new BusinessLogicException(ExceptionCode.FILE_IO_INTERRUPTED);
     }
 
     return ResponseEntity.ok()
@@ -61,12 +75,12 @@ public class LocalStoredFileStorage {
             "attachment; filename=\"" + storedFile.getFileName() + "\"")
         .header(HttpHeaders.CONTENT_TYPE, storedFile.getType())
         .contentLength(storedFile.getSize())
-        .body(resource);
+        .body(fileBytes);
   }
 
-  public StoredFile backup(List<Employee> employees, Long backupNumber, StoredFile storedFile) {
+  public StoredFile backup(List<Employee> employees, Long storedFileNumber, StoredFile storedFile) {
     String backup_extension = ".csv";
-    Path backupPath = localRoot.resolve(backupNumber + backup_extension);
+    Path backupPath = localRoot.resolve(storedFileNumber + backup_extension);
     try (BufferedWriter writer = Files.newBufferedWriter(backupPath)) {
       writer.write("id,name,email,position,hireDate,status,employeeNumber,departmentId,profileId,createdAt,updatedAt");
       writer.newLine();
@@ -90,14 +104,13 @@ public class LocalStoredFileStorage {
       }
 
       // 파일 메타데이터 설정 (파일 다 쓰고 나서)
-      storedFile.setFileName(backupNumber + backup_extension);
+      storedFile.setFileName(storedFileNumber + backup_extension);
       storedFile.setType("text/csv");
       storedFile.setSize(Files.size(backupPath));
 
-      throw new IOException();
     } catch (IOException e) {
       String error_extension = ".log";
-      Path errorPath = localRoot.resolve(backupNumber + error_extension);
+      Path errorPath = localRoot.resolve(storedFileNumber + error_extension);
 
       try (BufferedWriter writer = Files.newBufferedWriter(errorPath)) {
         StringBuilder errorInfo = new StringBuilder();
@@ -116,12 +129,12 @@ public class LocalStoredFileStorage {
 
         writer.write(errorInfo.toString());
 
-        storedFile.setFileName("ERROR_"+backupNumber + error_extension);
+        storedFile.setFileName("ERROR_"+storedFileNumber + error_extension);
         storedFile.setType("text/plain");
         storedFile.setSize(Files.size(errorPath));
 
       } catch (IOException ex) {
-        throw new RuntimeException("백업 실패 로그 작성중 오류가 발생했습니다.");
+        throw new BusinessLogicException(ExceptionCode.FILE_IO_INTERRUPTED);
       }
     }
     return storedFile;
