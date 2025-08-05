@@ -2,6 +2,7 @@ package com.codeit.hrbank.employee.entity;
 
 import com.codeit.hrbank.exception.BusinessLogicException;
 import com.codeit.hrbank.exception.ExceptionCode;
+import org.springframework.util.StringUtils;
 
 public enum EmployeeStatus {
     ACTIVE("재직중"),
@@ -20,9 +21,9 @@ public enum EmployeeStatus {
 
     public static EmployeeStatus parseStatus(String status) {
         try {
-            return status != null ? EmployeeStatus.valueOf(status.trim().toUpperCase()) : EmployeeStatus.ACTIVE;
+            return StringUtils.hasText(status) ? EmployeeStatus.valueOf(status.trim().toUpperCase()) : null;
         } catch (RuntimeException e) {
-            throw new BusinessLogicException(ExceptionCode.INVALID_TIME_UNIT);
+            throw new BusinessLogicException(ExceptionCode.INVALID_EMPLOYEE_STATUS);
         }
     }
 }

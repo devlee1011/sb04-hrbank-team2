@@ -214,9 +214,10 @@ public class BasicEmployeeService implements EmployeeService {
 
     @Transactional(readOnly = true)
     @Override
-    public long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate) {
+    public Long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate) {
         if (fromDate == null) fromDate = LocalDate.of(1900, 1, 1);
         if (toDate == null) toDate = LocalDate.now();
+        if (status == null) return employeeRepository.countTotalEmployee();
         return employeeRepository.countByStatusAndHireDateBetween(status, fromDate, toDate);
     }
 
@@ -239,10 +240,9 @@ public class BasicEmployeeService implements EmployeeService {
         return getEmployeeTrendProjections(targetPeriod.getFrom(), targetPeriod.getTo(), statuses, unit);
     }
 
-
     @Transactional(readOnly = true)
     @Override
-    public long getEmployeeCountInCurrentMonth() {
+    public Long getEmployeeCountInCurrentMonth() {
         LocalDate from = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
         LocalDate to = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth());
         return employeeRepository.countByHireDateInCurrentMonth(from, to);

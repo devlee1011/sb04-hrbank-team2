@@ -25,11 +25,11 @@ public interface EmployeeService {
 
     Page<Employee> getAll(EmployeeGetAllRequest employeeGetAllRequest);
 
-    long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate);
+    Long getCount(EmployeeStatus status, LocalDate fromDate, LocalDate toDate);
 
     List<EmployeeDistributionProjection> getDistribution(String groupBy, EmployeeStatus status);
 
     List<EmployeeTrendProjection> getTrend(LocalDate from, LocalDate to, UnitType unit);
 
-    long getEmployeeCountInCurrentMonth();
+    Long getEmployeeCountInCurrentMonth();
 }

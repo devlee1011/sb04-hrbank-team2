@@ -108,7 +108,7 @@ public class EmployeeController {
 
     @GetMapping("/count")
     public ResponseEntity count(@RequestParam(required = false) String status, @RequestParam(required = false) LocalDate fromDate, @RequestParam(required = false) LocalDate toDate) {
-        long count = employeeService.getCount(EmployeeStatus.parseStatus(status),fromDate,toDate);
+        Long count = employeeService.getCount(EmployeeStatus.parseStatus(status) ,fromDate,toDate);
         return ResponseEntity.ok(count);
     }
 
