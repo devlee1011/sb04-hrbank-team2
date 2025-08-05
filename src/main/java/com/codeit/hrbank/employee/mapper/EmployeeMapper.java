@@ -20,7 +20,7 @@ public interface EmployeeMapper {
     @Mapping(target = "profileImageId", expression = "java(employee.getProfile() != null ? employee.getProfile().getId() : null)")
     EmployeeDto toDto(Employee employee);
 
-    @Mapping(target = "percentage", expression = "java(((double) (projection.getCount()) / employeeCount)*100.0)")
+    @Mapping(target = "percentage", expression = "java(employeeCount == 0 ? 0.0 : ((double) projection.getCount() / employeeCount) * 100.0")
     EmployeeDistributionDto toEmployeeDistributionDto(EmployeeDistributionProjection projection, long employeeCount);
 
     default
