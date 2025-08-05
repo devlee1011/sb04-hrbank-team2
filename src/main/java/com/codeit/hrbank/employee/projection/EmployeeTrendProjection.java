@@ -10,5 +10,5 @@ import java.time.LocalDate;
 public class EmployeeTrendProjection {
     private final LocalDate targetDate;
     private final long currentCount;
-    private final long totalCount;
+    private final long prevCount;
 }
