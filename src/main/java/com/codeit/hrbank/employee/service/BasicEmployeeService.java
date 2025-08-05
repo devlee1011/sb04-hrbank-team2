@@ -168,7 +168,7 @@ public class BasicEmployeeService implements EmployeeService {
                 .ifPresent(departmentId -> {
                     Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId())
                                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
-                    logs.add(new DiffDto("DepartmentName", findEmployee.getDepartment().getName(),findDepartment.getName()));
+                    logs.add(new DiffDto("department", findEmployee.getDepartment().getName(),findDepartment.getName()));
                     findEmployee.setDepartment(findDepartment);
                 });
 
