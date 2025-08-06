@@ -1,10 +1,12 @@
 spring:
   application:
     name: hrbank
+  config:
+    import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:postgresql://localhost:5432/hrbank
-    username: hrbank_user
-    password: hrbank1234
+    url: ${DATABASE_URL}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -33,3 +35,11 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+
+hrbank:
+  local:
+    path: localFile
+
+backup:
+  schedule:
+    cron: "0 0 * * * *"  # 초 분 시 일 월 요일

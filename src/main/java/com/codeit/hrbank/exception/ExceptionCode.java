@@ -3,8 +3,22 @@ package com.codeit.hrbank.exception;
 import lombok.Getter;
 
 public enum ExceptionCode {
-    DEPARTMENT_HAS_EMPLOYEE_CANNOT_DELETE(400, "소속 직원이 있는 부서는 삭제할 수 없습니다.", "details"),
-    DEPARTMENT_ID_IS_NOT_FOUND(400, "잘못된 요청입니다.", "details");
+    DEPARTMENT_HAS_EMPLOYEE_CANNOT_DELETE(400, "잘못된 요청입니다.", "소속 직원이 있는 부서는 삭제할 수 없습니다."),
+    DEPARTMENT_ID_IS_NOT_FOUND(404, "잘못된 요청입니다.", "해당 부서를 찾을 수 없습니다."),
+    STORED_FILE_NOT_FOUND(404,"잘못된 요청입니다.","해당 파일을 찾을 수 없습니다."),
+    NAME_ALREADY_EXISTS(400, "잘못된 입력입니다.", "해당 이름은 이미 존재합니다."),
+    NAME_CANNOT_BE_NULL(400, "잘못된 입력입니다.", "이름이 비어있거나 null이 될 수 없습니다."),
+    DESCRIPTION_CANNOT_BE_NULL(400, "잘못된 입력입니다.", "설명이 비어있거나 null이 될 수 없습니다."),
+    EMAIL_ALREADY_EXISTS(400,"잘못된 입력입니다.","해당 이메일은 이미 존재합니다."),
+    EMPLOYEE_NOT_FOUND(404,"잘못된 요청입니다.", "해당 직원을 찾을 수 없습니다."),
+    INVALID_DATE_FORMAT(400, "잘못된 요청입니다.", "날짜 형식이 잘못되었습니다."),
+    LOG_NOT_FOUND(404,"잘못된 요청입니다.","해당 로그를 찾을 수 없습니다."),
+    DEPARTMENT_CANNOT_BE_NULL(400, "잘못된 입력입니다.", "부서 id는 누락될 수 없습니다."),
+    INVALID_TIME_UNIT(400, "잘못된 요청입니다.", "시간 단위 입력이 잘못되었습니다."),
+    INVALID_EMPLOYEE_STATUS(400, "잘못된 요청입니다.", "직원 상태 입력 값이 유효하지 않은 값입니다."),
+    BACKUP_NOT_FOUND(404,"잘못된 요청입니다.","해당 상태의 백업 기록이 없습니다."),
+    FILE_IO_INTERRUPTED(500,"파일작업중 오류가 발생했습니다.","IO 작업 도중 인터럽트 발생");
+
 //    USER_NOT_FOUND(404, "User Not Found"),
 //    EMAIL_OR_USERNAME_ALREADY_EXISTS(400, "User With Email Already Exists"),
 //    CHANNEL_OR_USER_NOT_FOUND(404, "Channel | User With ID Not Found"),

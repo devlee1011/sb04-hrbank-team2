@@ -63,12 +63,12 @@ create table backups
         constraint backups_status_check
             check ((status)::text = ANY
                    ((ARRAY ['IN_PROGRESS'::character varying, 'COMPLETED'::character varying, 'SKIPPED'::character varying, 'FAILED'::character varying])::text[])),
-    started_at timestamp with time zone                           not null,
-    ended_at   timestamp with time zone                           not null,
+    started_at timestamp with time zone,
+    ended_at   timestamp with time zone,
     created_at timestamp with time zone default CURRENT_TIMESTAMP not null,
     file_id    bigint
         references files
-            on delete cascade
+            on delete set null
 );
 
 alter table backups
@@ -81,7 +81,7 @@ create table change_logs
     type            varchar(20)                                        not null
         constraint change_logs_type_check
             check ((type)::text = ANY
-                   ((ARRAY ['CREATE'::character varying, 'UPDATE'::character varying, 'DELETE'::character varying])::text[])),
+                   ((ARRAY ['CREATED'::character varying, 'UPDATED'::character varying, 'DELETED'::character varying])::text[])),
     employee_number varchar(50)                                        not null,
     memo            text,
     ip_address      varchar(45)                                        not null,
