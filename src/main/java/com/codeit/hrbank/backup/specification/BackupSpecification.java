@@ -14,12 +14,12 @@ public class BackupSpecification {
       Predicate predicates = cb.conjunction();
 
       if (request.worker() != null && !request.worker().isBlank()) {
-        predicates.getExpressions().add(cb.equal(root.get("worker"), request.worker()));
+        predicates.getExpressions().add(cb.like(root.get("worker"), request.worker()));
       }
 
       if (request.status() != null && !request.status().isBlank()) {
         predicates.getExpressions()
-            .add(cb.equal(root.get("status"), BackupStatus.valueOf(request.status())));
+            .add(cb.equal(root.get("status"), request.status()));
       }
 
       if (request.startedAtFrom() != null) {
