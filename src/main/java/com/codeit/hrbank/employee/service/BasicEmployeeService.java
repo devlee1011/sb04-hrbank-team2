@@ -56,7 +56,7 @@ public class BasicEmployeeService implements EmployeeService {
             if ("name".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.greaterThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
+                spec = spec.and(EmployeeSpecification.greaterThanHireDate(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("employeeNumber".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.greaterThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             }
@@ -64,7 +64,7 @@ public class BasicEmployeeService implements EmployeeService {
             if ("name".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanName(employeeGetAllRequest.idAfter(),employeeGetAllRequest.cursor()));
             } else if ("hireDate".equals(sortField)) {
-                spec = spec.and(EmployeeSpecification.lessThanHireDate(employeeGetAllRequest.idAfter(), LocalDate.parse(employeeGetAllRequest.cursor())));
+                spec = spec.and(EmployeeSpecification.lessThanHireDate(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             } else if ("employeeNumber".equals(sortField)) {
                 spec = spec.and(EmployeeSpecification.lessThanEmployeeNumber(employeeGetAllRequest.idAfter(), employeeGetAllRequest.cursor()));
             }
@@ -168,7 +168,7 @@ public class BasicEmployeeService implements EmployeeService {
                 .ifPresent(departmentId -> {
                     Department findDepartment = departmentRepository.findById(employeeUpdateRequest.departmentId())
                                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.DEPARTMENT_ID_IS_NOT_FOUND));
-                    logs.add(new DiffDto("DepartmentName", findEmployee.getDepartment().getName(),findDepartment.getName()));
+                    logs.add(new DiffDto("department", findEmployee.getDepartment().getName(),findDepartment.getName()));
                     findEmployee.setDepartment(findDepartment);
                 });
 
@@ -255,6 +255,7 @@ public class BasicEmployeeService implements EmployeeService {
 
         switch (unit) {
             case DAY -> {
+                prevCount = employeeRepository.countByTargetDate(from.minusDays(1), statuses);
                 for (LocalDate cur = from;
                      !cur.isAfter(to);
                      cur = cur.plusDays(1)) {
@@ -270,6 +271,7 @@ public class BasicEmployeeService implements EmployeeService {
                 }
             }
             case WEEK -> {
+                prevCount = employeeRepository.countByTargetDate(from.minusWeeks(1), statuses);
                 for (LocalDate cur = from;
                      !cur.isAfter(to);
                      cur = cur.plusWeeks(1)) {
@@ -285,6 +287,7 @@ public class BasicEmployeeService implements EmployeeService {
                 }
             }
             case MONTH -> {
+                prevCount = employeeRepository.countByTargetDate(from.minusMonths(1), statuses);
                 for (LocalDate cur = from;
                      !cur.isAfter(to); cur = cur.plusMonths(1)) {
                     long currentCount = employeeRepository.countByTargetDate(cur, statuses);
@@ -299,6 +302,7 @@ public class BasicEmployeeService implements EmployeeService {
                 }
             }
             case QUARTER -> {
+                prevCount = employeeRepository.countByTargetDate(from.minusMonths(3), statuses);
                 for (LocalDate cur = from;
                      !cur.isAfter(to);
                      cur = cur.plusMonths(3)) {
@@ -314,6 +318,7 @@ public class BasicEmployeeService implements EmployeeService {
                 }
             }
             case YEAR -> {
+                prevCount = employeeRepository.countByTargetDate(from.minusYears(1), statuses);
                 for (LocalDate cur = from;
                      !cur.isAfter(to);
                      cur = cur.plusYears(1)) {
