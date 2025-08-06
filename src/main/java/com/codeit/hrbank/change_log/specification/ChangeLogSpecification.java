@@ -18,7 +18,7 @@ public class ChangeLogSpecification {
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (employeeNumber == null) return null;
                 return criteriaBuilder.like(
-                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("memo"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("employeeNumber"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
                         "%" + employeeNumber.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
@@ -42,7 +42,7 @@ public class ChangeLogSpecification {
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (ipAddress == null) return null;
                 return criteriaBuilder.like(
-                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("memo"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                        criteriaBuilder.lower(criteriaBuilder.function("replace", String.class, root.get("ipAddress"), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
                         "%" + ipAddress.trim().toLowerCase().replaceAll("\\s+", "") + "%");
             }
         };
@@ -63,7 +63,7 @@ public class ChangeLogSpecification {
             @Override
             public Predicate toPredicate(Root<ChangeLog> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 if (type == null) return null;
-                return criteriaBuilder.equal(root.get("status"), type);
+                return criteriaBuilder.equal(root.get("type"), type);
             }
         };
     }
